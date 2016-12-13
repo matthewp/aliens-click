@@ -5,7 +5,7 @@ export default {
   format: 'iife',
   plugins: [
     babel({
-      exclude: 'node_modules/**'
+      exclude: process.env.BABEL_ENV === 'production' ? '' : 'node_modules/**'
     }),
     nodeResolve({
       jsnext: true,

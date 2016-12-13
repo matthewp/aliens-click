@@ -1,4 +1,4 @@
-.PHONY: app watch serve template all
+.PHONY: app watch serve template prod all
 
 all: app templates
 
@@ -10,6 +10,9 @@ templates:
 
 serve:
 	node server/index.js
+
+prod:
+	 BABEL_ENV=production make app
 
 watch:
 	find src -name "*.js" | entr make app
