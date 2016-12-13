@@ -760,7 +760,9 @@ var Layout = function (props, children) {
         'Aliens app!'
       ),
       h('link', { rel: 'stylesheet', href: '/styles.css' }),
-      h('meta', { name: 'viewport', content: 'width=device-width, initial-scale=1' })
+      h('meta', { name: 'viewport', content: 'width=device-width, initial-scale=1' }),
+      h('link', { rel: 'preload', href: '/node_modules/fritz/window.js', as: 'script' }),
+      h('link', { rel: 'preload', href: '/routes.js', as: 'script' })
     ),
     h(
       'body',
