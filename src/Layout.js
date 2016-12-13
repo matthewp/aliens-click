@@ -23,7 +23,7 @@ export default function(props, children) {
       <link rel="stylesheet" href="/styles.css"/>
       <meta name="viewport" content="width=device-width, initial-scale=1"/>
       <link rel="preload" href="/node_modules/fritz/window.js" as="script" />
-      <link rel="preload" href="/routes.js" as="script" />
+      <link rel="preload" href="/routes.js" as="worker" />
     </head>
     <body>
       <header></header>
