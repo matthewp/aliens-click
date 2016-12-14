@@ -11,8 +11,9 @@ templates:
 serve:
 	node server/index.js
 
-prod:
-	 BABEL_ENV=production make app
+release:
+	BABEL_ENV=production make all
+
 
 watch:
 	find src -name "*.js" | entr make app

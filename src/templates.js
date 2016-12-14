@@ -2,6 +2,7 @@ import { h } from 'fritz';
 import Layout from './Layout.js';
 import Loading from './Loading.js';
 import SpeciesList from './SpeciesList.js';
+import SpeciesArticle from './SpeciesArticle.js';
 
 function index(species, state) {
   return (
@@ -34,16 +35,9 @@ function articleSection(section, idx) {
 }
 
 function article(articleData, state) {
-  let data = articleData;
-  let intro = data.article.sections[0];
-
   return (
     <Layout state={state}>
-      <h1>{intro.title}</h1>
-
-      <article>
-        {data.article.sections.map(articleSection)}
-      </article>
+      <SpeciesArticle data={articleData} />
     </Layout>
   );
 }

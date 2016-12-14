@@ -1,18 +1,15 @@
 import { h } from 'fritz';
+import { thumbnail } from './utils.js';
 
 function Specie({specie}) {
   let url = `/article/${specie.id}`;
-  let thumbnail = (specie.thumbnail || '').replace('http:', '');
+  let tn = thumbnail(specie);
 
   return (
     <li class="specie">
       <a href={url}>
         <figure>
-          {
-            thumbnail
-              ? <img src={thumbnail} />
-              : ''
-          }
+          { tn ? <img src={tn} /> : '' }
         </figure>
         <span class="specie-title">{specie.title}</span>
       </a>

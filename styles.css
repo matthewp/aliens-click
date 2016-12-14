@@ -9,9 +9,19 @@ body {
    margin: 0;
 }
 
-header {
+body > header {
   height: 3em;
   background: #750D37;
+  display: flex;
+}
+
+.home-button {
+  margin-left: 2em;
+  align-self: center;
+}
+
+.home-icon {
+  height: 2em;
 }
 
 main, footer {
