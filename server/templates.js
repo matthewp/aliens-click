@@ -831,21 +831,22 @@ var Loading = function () {
 
 function Specie({ specie }) {
   let url = `/article/${ specie.id }`;
+  let thumbnail = (specie.thumbnail || '').replace('http:', '');
 
   return h(
-    "li",
-    { "class": "specie" },
+    'li',
+    { 'class': 'specie' },
     h(
-      "a",
+      'a',
       { href: url },
       h(
-        "figure",
+        'figure',
         null,
-        h("img", { src: specie.thumbnail })
+        thumbnail ? h('img', { src: thumbnail }) : ''
       ),
       h(
-        "span",
-        { "class": "specie-title" },
+        'span',
+        { 'class': 'specie-title' },
         specie.title
       )
     )
@@ -856,21 +857,21 @@ var SpeciesList = function ({ filter, species }, children) {
   let items = filter ? filterSpecies(species, filter) : species;
 
   return h(
-    "div",
+    'div',
     null,
     h(
-      "h1",
+      'h1',
       null,
-      "Aliens"
+      'Aliens'
     ),
     h(
-      "form",
-      { action: "/search", "data-event": "keyup", "data-no-push": true },
-      h("input", { type: "text", value: filter ? filter : '', name: "q", placeholder: "Search species", "class": "alien-search" })
+      'form',
+      { action: '/search', 'data-event': 'keyup', 'data-no-push': true },
+      h('input', { type: 'text', value: filter ? filter : '', name: 'q', placeholder: 'Search species', 'class': 'alien-search' })
     ),
     h(
-      "ul",
-      { "class": "species" },
+      'ul',
+      { 'class': 'species' },
       items.map(specie => {
         return h(Specie, { specie: specie });
       })

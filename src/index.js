@@ -1,22 +1,18 @@
 import { h } from 'fritz';
 import Layout from './Layout.js';
 import SpeciesList from './SpeciesList.js';
-import { details } from './api.js';
-
-const ids = [
-  1443, // xenomorph
-  8459, // predator
-  1758, // engineer
-  1754, // facehugger
-  11254 // predalien
-];
+import { details, list as aliensList } from './api.js';
+import {
+  index as indexTemplate,
+  search as searchTemplate
+} from './templates.js';
 
 export default function(){
   const app = this;
 
   function allSpecies(req, res, next) {
     if(!app.state.species) {
-      details(ids).then(species => {
+      aliensList().then(species => {
         app.state.species = species;
         next();
       });
@@ -29,11 +25,7 @@ export default function(){
   allSpecies,
   function(req, res) {
     let species = app.state.species;
-    res.push(
-      <Layout>
-        <SpeciesList species={species}></SpeciesList>
-      </Layout>
-    );
+    res.push(indexTemplate(species));
   });
 
   app.get('/search',
@@ -42,11 +34,7 @@ export default function(){
     let query = req.url.searchParams.get('q');
     let species = app.state.species;
 
-    res.push(
-      <Layout>
-        <SpeciesList species={species} filter={query}></SpeciesList>
-      </Layout>
-    );
+    res.push(searchTemplate(species, query));
   });
 }
 

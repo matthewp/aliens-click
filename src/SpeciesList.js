@@ -2,12 +2,17 @@ import { h } from 'fritz';
 
 function Specie({specie}) {
   let url = `/article/${specie.id}`;
+  let thumbnail = (specie.thumbnail || '').replace('http:', '');
 
   return (
     <li class="specie">
       <a href={url}>
         <figure>
-          <img src={specie.thumbnail} />
+          {
+            thumbnail
+              ? <img src={thumbnail} />
+              : ''
+          }
         </figure>
         <span class="specie-title">{specie.title}</span>
       </a>

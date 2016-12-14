@@ -2,6 +2,7 @@ import { h } from 'fritz';
 import Layout from './layout.js';
 import Loading from './loading.js';
 import * as api from './api.js';
+import { article as articleTemplate } from './templates.js';
 
 export default function(){
   const app = this;
@@ -36,16 +37,6 @@ export default function(){
     let data = req.articleData;
     let intro = data.article.sections[0];
 
-    res.push(
-      <Layout>
-        <h1>{intro.title}</h1>
-
-        <article>
-          {intro.content.map(content => {
-            return <p>{content.text}</p>
-          })}
-        </article>
-      </Layout>
-    );
+    res.push(articleTemplate(data));
   });
 }

@@ -1,3 +1,7 @@
+export function list() {
+  return fetch('/api/aliens').then(res => res.json());
+}
+
 export function details(ids) {
   return fetch(`/api/details/${ids.join(',')}`)
     .then(res => res.json())

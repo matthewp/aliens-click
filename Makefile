@@ -6,7 +6,7 @@ app:
 	./node_modules/.bin/rollup -c rollup.config.js -o routes.js src/routes.js
 
 templates:
-	./node_modules/.bin/rollup src/server/index.js -c rollup.config.js -o server/templates.js -f cjs
+	./node_modules/.bin/rollup src/templates.js -c rollup.config.js -o server/templates.js -f cjs
 
 serve:
 	node server/index.js

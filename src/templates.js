@@ -1,7 +1,7 @@
 import { h } from 'fritz';
-import Layout from '../Layout.js';
-import Loading from '../Loading.js';
-import SpeciesList from '../SpeciesList.js';
+import Layout from './Layout.js';
+import Loading from './Loading.js';
+import SpeciesList from './SpeciesList.js';
 
 function index(species, state) {
   return (

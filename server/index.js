@@ -11,19 +11,10 @@ const {
   article: articleTemplate
 } = templates;
 
-const ids = [
-  1443, // xenomorph
-  8459, // predator
-  1758, // engineer
-  1754, // facehugger
-  11254 // predalien
-];
-
 app.use(compression());
 
-app.get('/api/details/:ids', function(req, res){
-  let ids = req.params.ids;
-  api.details(ids).then(json => res.send(json));
+app.get('/api/aliens', function(req, res){
+  api.list().then(json => res.send(json));
 });
 
 app.get('/api/article/:id', function(req, res){
@@ -32,9 +23,8 @@ app.get('/api/article/:id', function(req, res){
 });
 
 app.get('/', function(req, res){
-  api.details(ids)
-  .then(data => {
-    let species = Object.keys(data.items).map(id => data.items[id]);
+  api.list()
+  .then(species => {
     let bc = indexTemplate(species, { species });
     let html = idomToString(bc);
     res.type('html').end(html);
@@ -62,9 +52,8 @@ app.get('/article/:id', function(req, res){
 app.get('/search', function(req, res){
   let q = req.query.q;
 
-  api.details(ids)
-  .then(data => {
-    let species = Object.keys(data.items).map(id => data.items[id]);
+  api.list()
+  .then(species => {
     let bc = searchTemplate(species, q, { species });
     let html = idomToString(bc);
     res.type('html').end(html);

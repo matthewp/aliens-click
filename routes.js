@@ -810,21 +810,22 @@ var Layout = function (props, children) {
 
 function Specie({ specie }) {
   let url = `/article/${ specie.id }`;
+  let thumbnail = (specie.thumbnail || '').replace('http:', '');
 
   return h(
-    "li",
-    { "class": "specie" },
+    'li',
+    { 'class': 'specie' },
     h(
-      "a",
+      'a',
       { href: url },
       h(
-        "figure",
+        'figure',
         null,
-        h("img", { src: specie.thumbnail })
+        thumbnail ? h('img', { src: thumbnail }) : ''
       ),
       h(
-        "span",
-        { "class": "specie-title" },
+        'span',
+        { 'class': 'specie-title' },
         specie.title
       )
     )
@@ -835,21 +836,21 @@ var SpeciesList = function ({ filter, species }, children) {
   let items = filter ? filterSpecies(species, filter) : species;
 
   return h(
-    "div",
+    'div',
     null,
     h(
-      "h1",
+      'h1',
       null,
-      "Aliens"
+      'Aliens'
     ),
     h(
-      "form",
-      { action: "/search", "data-event": "keyup", "data-no-push": true },
-      h("input", { type: "text", value: filter ? filter : '', name: "q", placeholder: "Search species", "class": "alien-search" })
+      'form',
+      { action: '/search', 'data-event': 'keyup', 'data-no-push': true },
+      h('input', { type: 'text', value: filter ? filter : '', name: 'q', placeholder: 'Search species', 'class': 'alien-search' })
     ),
     h(
-      "ul",
-      { "class": "species" },
+      'ul',
+      { 'class': 'species' },
       items.map(specie => {
         return h(Specie, { specie: specie });
       })
@@ -862,30 +863,64 @@ function filterSpecies(species, query) {
   return species.filter(specie => specie.title.toLowerCase().indexOf(query) === 0);
 }
 
-function details(ids) {
-  return fetch(`/api/details/${ ids.join(',') }`).then(res => res.json()).then(data => {
-    let species = Object.keys(data.items).map(id => data.items[id]);
-    return species;
-  });
+function list() {
+  return fetch('/api/aliens').then(res => res.json());
 }
+
+
 
 function article(id) {
   return fetch(`/api/article/${ id }`).then(res => res.json());
 }
 
-const ids = [1443, // xenomorph
-8459, // predator
-1758, // engineer
-1754, // facehugger
-11254 // predalien
-];
+function index$1$1(species, state) {
+  return h(
+    Layout,
+    { state: state },
+    h(SpeciesList, { species: species })
+  );
+}
+
+function search(species, query, state) {
+  return h(
+    Layout,
+    { state: state },
+    h(SpeciesList, { species: species, filter: query })
+  );
+}
+
+function article$1(articleData, state) {
+  let data = articleData;
+  let intro = data.article.sections[0];
+
+  return h(
+    Layout,
+    { state: state },
+    h(
+      'h1',
+      null,
+      intro.title
+    ),
+    h(
+      'article',
+      null,
+      intro.content.map(content => {
+        return h(
+          'p',
+          null,
+          content.text
+        );
+      })
+    )
+  );
+}
 
 var indexRoute = function () {
   const app = this;
 
   function allSpecies(req, res, next) {
     if (!app.state.species) {
-      details(ids).then(species => {
+      list().then(species => {
         app.state.species = species;
         next();
       });
@@ -896,22 +931,14 @@ var indexRoute = function () {
 
   app.get('/', allSpecies, function (req, res) {
     let species = app.state.species;
-    res.push(h(
-      Layout,
-      null,
-      h(SpeciesList, { species: species })
-    ));
+    res.push(index$1$1(species));
   });
 
   app.get('/search', allSpecies, function (req, res) {
     let query = req.url.searchParams.get('q');
     let species = app.state.species;
 
-    res.push(h(
-      Layout,
-      null,
-      h(SpeciesList, { species: species, filter: query })
-    ));
+    res.push(search(species, query));
   });
 };
 
@@ -987,7 +1014,7 @@ var Layout$1 = function (props, children) {
   );
 };
 
-var Loading = function () {
+var Loading$1 = function () {
   return h(
     "div",
     { "class": "loading" },
@@ -1038,7 +1065,7 @@ var articleRoute = function () {
       res.push(h(
         Layout$1,
         null,
-        h(Loading, null)
+        h(Loading$1, null)
       ));
     }
     next();
@@ -1046,26 +1073,7 @@ var articleRoute = function () {
     let data = req.articleData;
     let intro = data.article.sections[0];
 
-    res.push(h(
-      Layout$1,
-      null,
-      h(
-        'h1',
-        null,
-        intro.title
-      ),
-      h(
-        'article',
-        null,
-        intro.content.map(content => {
-          return h(
-            'p',
-            null,
-            content.text
-          );
-        })
-      )
-    ));
+    res.push(article$1(data));
   });
 };
 
