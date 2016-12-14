@@ -19,6 +19,20 @@ function search(species, query, state) {
   );
 }
 
+function articleSection(section, idx) {
+  return (
+    <section>
+      {idx === 0 ? '' : <h2>{section.title}</h2>}
+
+      <div>
+        {section.content.map(content => {
+          return <p>{content.text}</p>
+        })}
+      </div>
+    </section>
+  );
+}
+
 function article(articleData, state) {
   let data = articleData;
   let intro = data.article.sections[0];
@@ -28,9 +42,7 @@ function article(articleData, state) {
       <h1>{intro.title}</h1>
 
       <article>
-        {intro.content.map(content => {
-          return <p>{content.text}</p>
-        })}
+        {data.article.sections.map(articleSection)}
       </article>
     </Layout>
   );

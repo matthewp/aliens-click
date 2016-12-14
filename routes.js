@@ -889,6 +889,29 @@ function search(species, query, state) {
   );
 }
 
+function articleSection(section, idx) {
+  return h(
+    'section',
+    null,
+    idx === 0 ? '' : h(
+      'h2',
+      null,
+      section.title
+    ),
+    h(
+      'div',
+      null,
+      section.content.map(content => {
+        return h(
+          'p',
+          null,
+          content.text
+        );
+      })
+    )
+  );
+}
+
 function article$1(articleData, state) {
   let data = articleData;
   let intro = data.article.sections[0];
@@ -904,13 +927,7 @@ function article$1(articleData, state) {
     h(
       'article',
       null,
-      intro.content.map(content => {
-        return h(
-          'p',
-          null,
-          content.text
-        );
-      })
+      data.article.sections.map(articleSection)
     )
   );
 }
@@ -1071,8 +1088,6 @@ var articleRoute = function () {
     next();
   }, details$$1, function (req, res) {
     let data = req.articleData;
-    let intro = data.article.sections[0];
-
     res.push(article$1(data));
   });
 };

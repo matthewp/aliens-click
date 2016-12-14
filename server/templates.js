@@ -900,6 +900,29 @@ function search(species, query, state) {
   );
 }
 
+function articleSection(section, idx) {
+  return h(
+    'section',
+    null,
+    idx === 0 ? '' : h(
+      'h2',
+      null,
+      section.title
+    ),
+    h(
+      'div',
+      null,
+      section.content.map(content => {
+        return h(
+          'p',
+          null,
+          content.text
+        );
+      })
+    )
+  );
+}
+
 function article(articleData, state) {
   let data = articleData;
   let intro = data.article.sections[0];
@@ -915,13 +938,7 @@ function article(articleData, state) {
     h(
       'article',
       null,
-      intro.content.map(content => {
-        return h(
-          'p',
-          null,
-          content.text
-        );
-      })
+      data.article.sections.map(articleSection)
     )
   );
 }

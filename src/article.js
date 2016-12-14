@@ -35,8 +35,6 @@ export default function(){
   details,
   function(req, res){
     let data = req.articleData;
-    let intro = data.article.sections[0];
-
     res.push(articleTemplate(data));
   });
 }
