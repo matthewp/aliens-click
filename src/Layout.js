@@ -14,6 +14,7 @@ export default function(props, children) {
         }
         fritz.router = new Worker('/routes.js');
       </script>
+      <script src="/service-worker-registration.js"></script>
     </div>
   );
 
@@ -21,9 +22,12 @@ export default function(props, children) {
     <head>
       <title>Aliens app!</title>
       <link rel="stylesheet" href="/styles.css"/>
+      <link rel="manifest" href="/manifest.json"/>
       <meta name="viewport" content="width=device-width, initial-scale=1"/>
       <link rel="preload" href="/node_modules/fritz/window.js" as="script" />
       <link rel="preload" href="/routes.js" as="worker" />
+      <link rel="preload" href="/service-worker-registration.js" as="script" />
+      <link rel="shortcut icon" href="/favicon.ico"/>
     </head>
     <body>
       <header>

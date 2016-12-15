@@ -13,7 +13,7 @@ serve:
 
 release:
 	BABEL_ENV=production make all
-
+	node scripts/sw.js
 
 watch:
 	find src -name "*.js" | entr make app

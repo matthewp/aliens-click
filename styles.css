@@ -61,6 +61,13 @@ main, footer {
   border-radius: 5px;
 }
 
+@media only screen and (max-device-width: 767px) {
+  .specie figure img {
+    width: 150px;
+    height: 150px;
+  }
+}
+
 h1, h2, h3 {
   color: var(--header-color);
 }
