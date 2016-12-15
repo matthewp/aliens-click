@@ -12,5 +12,5 @@ export function details(ids) {
 }
 
 export function article(id) {
-  return fetch(`/api/article/${id}`).then(res => res.json());
+  return fetch(`/api/article/${id}?width=300`).then(res => res.json());
 }

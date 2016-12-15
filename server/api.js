@@ -9,8 +9,8 @@ function list() {
     .then(res => res.items.filter(item => item.thumbnail));
 }
 
-function article(id) {
-  let detailsUrl = `http://avp.wikia.com/api/v1/Articles/Details?ids=${id}&abstract=0&width=180&height=180`;
+function article(id, width = '180') {
+  let detailsUrl = `http://avp.wikia.com/api/v1/Articles/Details?ids=${id}&abstract=0&width=${width}&height=${width}`;
   let articleUrl = `http://avp.wikia.com/api/v1/Articles/AsSimpleJson?id=${id}`;
 
   return Promise.all([

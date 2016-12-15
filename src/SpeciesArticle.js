@@ -3,20 +3,6 @@ import { first, thumbnail } from './utils.js';
 
 export default article;
 
-function articleSection(section, idx) {
-  return (
-    <section>
-      {idx === 0 ? '' : <h2>{section.title}</h2>}
-
-      <div>
-        {section.content.map(content => {
-          return <p>{content.text}</p>
-        })}
-      </div>
-    </section>
-  );
-}
-
 function article({ data }) {
   let intro = data.article.sections[0];
   let item = first(data.detail.items);
@@ -36,5 +22,34 @@ function article({ data }) {
         </div>
       </article>
     </div>
+  );
+}
+
+function articleSection(section, idx) {
+  return (
+    <section>
+      {idx === 0 ? '' : <h2>{section.title}</h2>}
+
+      <div>
+        {section.content.map(content => {
+          switch(content.type) {
+            case 'list':
+              return list(content);
+            default:
+              return <p>{content.text}</p>
+          }
+        })}
+      </div>
+    </section>
+  );
+}
+
+function list(content) {
+  return (
+    <ul>
+      {content.elements.map(elem => {
+        return <li>{elem.text}</li>
+      })}
+    </ul>
   );
 }

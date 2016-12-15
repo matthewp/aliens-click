@@ -38,5 +38,5 @@ export default function({ filter, species }, children) {
 
 function filterSpecies(species, query){
   query = query.toLowerCase();
-  return species.filter(specie => specie.title.toLowerCase().indexOf(query) === 0);
+  return species.filter(specie => specie.title.toLowerCase().indexOf(query) !== -1);
 }

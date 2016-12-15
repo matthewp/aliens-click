@@ -1,17 +1,23 @@
 :root {
-  --alt-fg-color: #FEFFFE;
+  --alt-bg-color: #0B0014;
+  --fg-color: #FEFFFE;
+  --out-bg-color: #750D37;
   --alt-link-color: #B3DEC1;
+  --header-color: #B3DEC1;
 }
 
 body {
    font-family: "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif;
    font-weight: 300;
    margin: 0;
+   background-color: #2e3234;
+   color: var(--fg-color, #E5FCF5);
 }
 
 body > header {
   height: 3em;
-  background: #750D37;
+  background: var(--out-bg-color, #750D37);
+  box-shadow: 0px 4px 20px 0px #0B0014;
   display: flex;
 }
 
@@ -29,6 +35,12 @@ main, footer {
 }
 
 .alien-search {
+  background: var(--alt-bg-color, #0B0014);
+  color: var(--fg-color, #F5E9E2);
+  border: none;
+  line-height: 1.5em;
+  padding: .5em;
+  outline: none;
   font-size: 1.2em;
   width: 100%;
 }
@@ -45,6 +57,14 @@ main, footer {
   max-height: 200px;
 }
 
+.specie figure img {
+  border-radius: 5px;
+}
+
+h1, h2, h3 {
+  color: var(--header-color);
+}
+
 .specie {
   position: relative;
   display: inline-flex;
@@ -54,7 +74,7 @@ main, footer {
 .specie-title {
   position: absolute;
   background: rgba(0,0,0,.5);
-  color: var(--alt-fg-color);
+  color: var(--alt-link-color, white);
   padding: 3px;
   bottom: 0;
   left: 0;
@@ -72,9 +92,17 @@ main, footer {
   width: 150px;
 }
 
+.species-article header h1 {
+  font-size: 2.5em;
+}
+
+.species-article figure {
+  float: right;
+}
+
 footer {
-  background-color: #2e3234;
-  color: var(--alt-fg-color);
+  background-color: var(--out-bg-color);
+  color: var(--fg-color);
 }
 
 footer a,

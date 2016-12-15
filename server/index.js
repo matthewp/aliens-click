@@ -19,7 +19,8 @@ app.get('/api/aliens', function(req, res){
 
 app.get('/api/article/:id', function(req, res){
   let id = req.params.id;
-  api.article(id).then(result => res.send(result));
+  let width = req.query.width;
+  api.article(id, width).then(result => res.send(result));
 });
 
 app.get('/', function(req, res){
@@ -37,7 +38,7 @@ app.get('/', function(req, res){
 app.get('/article/:id', function(req, res){
   let id = req.params.id;
 
-  api.article(id)
+  api.article(id, '300')
   .then(data => {
     let bc = articleTemplate(data, { articleData: data });
     let html = idomToString(bc);
