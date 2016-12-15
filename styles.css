@@ -100,6 +100,10 @@ h1, h2, h3 {
   float: right;
 }
 
+.species-article p {
+  line-height: 23px;
+}
+
 footer {
   background-color: var(--out-bg-color);
   color: var(--fg-color);
