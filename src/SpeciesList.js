@@ -1,12 +1,13 @@
 import { h } from 'fritz';
 import { thumbnail } from './utils.js';
 
-function Specie({specie}) {
+function Specie({specie, selected}) {
   let url = `/article/${specie.id}`;
   let tn = thumbnail(specie);
+  let className = 'specie' + (selected ? ' selected-specie' : '');
 
   return (
-    <li class="specie">
+    <li class={className}>
       <a href={url}>
         <figure>
           { tn ? <img src={tn} /> : '' }
@@ -17,7 +18,7 @@ function Specie({specie}) {
   );
 }
 
-export default function({ filter, species }, children) {
+export default function({ filter, species, selected }, children) {
   let items = filter ? filterSpecies(species, filter) : species;
 
   return (
@@ -25,11 +26,13 @@ export default function({ filter, species }, children) {
       <h1>Aliens</h1>
 
       <form action="/search" data-event="keyup" data-no-push>
-        <input type="text" value={ filter ? filter : '' } name="q" placeholder="Search species" class="alien-search" />
+        <input type="text" value={ filter ? filter : '' } name="q" placeholder="Search species" class="alien-search" id="alien-search" />
       </form>
       <ul class="species">
-        {items.map(specie => {
-          return <Specie specie={specie}/>
+        {items.map((specie, idx) => {
+          let isSelected = idx === selected;
+
+          return <Specie specie={specie} selected={isSelected} />
         })}
       </ul>
     </div>

@@ -761,7 +761,8 @@ var Layout = function (props, children) {
       null,
       state ? `fritz.state = ${ JSON.stringify(state) };\n` : '',
       'fritz.router = new Worker(\'/routes.js\');'
-    )
+    ),
+    h('script', { src: '/main.js' })
   );
 
   return h(
@@ -879,13 +880,14 @@ function thumbnail(item, width, height) {
   return tn;
 }
 
-function Specie({ specie }) {
+function Specie({ specie, selected }) {
   let url = `/article/${ specie.id }`;
   let tn = thumbnail(specie);
+  let className = 'specie' + (selected ? ' selected-specie' : '');
 
   return h(
     'li',
-    { 'class': 'specie' },
+    { 'class': className },
     h(
       'a',
       { href: url },
@@ -903,7 +905,7 @@ function Specie({ specie }) {
   );
 }
 
-var SpeciesList = function ({ filter, species }, children) {
+var SpeciesList = function ({ filter, species, selected }, children) {
   let items = filter ? filterSpecies(species, filter) : species;
 
   return h(
@@ -917,13 +919,15 @@ var SpeciesList = function ({ filter, species }, children) {
     h(
       'form',
       { action: '/search', 'data-event': 'keyup', 'data-no-push': true },
-      h('input', { type: 'text', value: filter ? filter : '', name: 'q', placeholder: 'Search species', 'class': 'alien-search' })
+      h('input', { type: 'text', value: filter ? filter : '', name: 'q', placeholder: 'Search species', 'class': 'alien-search', id: 'alien-search' })
     ),
     h(
       'ul',
       { 'class': 'species' },
-      items.map(specie => {
-        return h(Specie, { specie: specie });
+      items.map((specie, idx) => {
+        let isSelected = idx === selected;
+
+        return h(Specie, { specie: specie, selected: isSelected });
       })
     )
   );
@@ -1017,6 +1021,14 @@ function index(species, state) {
   );
 }
 
+function selection(species, idx) {
+  return h(
+    Layout,
+    { state: state },
+    h(SpeciesList, { species: species, selected: idx })
+  );
+}
+
 function search(species, query, state) {
   return h(
     Layout,
@@ -1039,3 +1051,4 @@ exports.SpeciesList = SpeciesList;
 exports.index = index;
 exports.search = search;
 exports.article = article;
+exports.selection = selection;

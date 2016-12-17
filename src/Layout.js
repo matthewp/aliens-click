@@ -16,6 +16,7 @@ export default function(props, children) {
         }
         fritz.router = new Worker('/routes.js');
       </script>
+      <script src="/main.js"></script>
     </div>
   );
 

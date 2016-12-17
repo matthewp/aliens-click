@@ -766,7 +766,8 @@ var Layout = function (props, children) {
       null,
       state ? `fritz.state = ${ JSON.stringify(state) };\n` : '',
       'fritz.router = new Worker(\'/routes.js\');'
-    )
+    ),
+    h('script', { src: '/main.js' })
   );
 
   return h(
@@ -858,13 +859,14 @@ function thumbnail(item, width, height) {
   return tn;
 }
 
-function Specie({ specie }) {
+function Specie({ specie, selected }) {
   let url = `/article/${ specie.id }`;
   let tn = thumbnail(specie);
+  let className = 'specie' + (selected ? ' selected-specie' : '');
 
   return h(
     'li',
-    { 'class': 'specie' },
+    { 'class': className },
     h(
       'a',
       { href: url },
@@ -882,7 +884,7 @@ function Specie({ specie }) {
   );
 }
 
-var SpeciesList = function ({ filter, species }, children) {
+var SpeciesList = function ({ filter, species, selected }, children) {
   let items = filter ? filterSpecies(species, filter) : species;
 
   return h(
@@ -896,13 +898,15 @@ var SpeciesList = function ({ filter, species }, children) {
     h(
       'form',
       { action: '/search', 'data-event': 'keyup', 'data-no-push': true },
-      h('input', { type: 'text', value: filter ? filter : '', name: 'q', placeholder: 'Search species', 'class': 'alien-search' })
+      h('input', { type: 'text', value: filter ? filter : '', name: 'q', placeholder: 'Search species', 'class': 'alien-search', id: 'alien-search' })
     ),
     h(
       'ul',
       { 'class': 'species' },
-      items.map(specie => {
-        return h(Specie, { specie: specie });
+      items.map((specie, idx) => {
+        let isSelected = idx === selected;
+
+        return h(Specie, { specie: specie, selected: isSelected });
       })
     )
   );
@@ -1006,6 +1010,14 @@ function index$1$1(species, state) {
   );
 }
 
+function selection(species, idx) {
+  return h(
+    Layout,
+    null,
+    h(SpeciesList, { species: species, selected: idx })
+  );
+}
+
 function search(species, query, state) {
   return h(
     Layout,
@@ -1048,8 +1060,32 @@ var indexRoute = function () {
     res.push(search(species, query));
   });
 
-  app.post('/select', function (req, res) {
-    if (code === 40) {}
+  function applySelection(req, res, next) {
+    let { cmd, count } = req.body;
+
+    let selectedIndex = app.state.selectedIndex;
+    let currentIndex = typeof selectedIndex !== 'undefined' ? selectedIndex : -5;
+    switch (cmd) {
+      case 'DOWN':
+        currentIndex = currentIndex + count;
+        break;
+      case 'UP':
+        currentIndex = currentIndex === -1 ? -1 : currentIndex - count;
+      case 'LEFT':
+        currentIndex--;
+        break;
+      case 'RIGHT':
+        currentIndex++;
+        break;
+    }
+
+    app.state.selectedIndex = req.selectedIndex = currentIndex;
+    next();
+  }
+
+  app.post('/select', allSpecies, applySelection, function (req, res) {
+    let species = app.state.species;
+    res.push(selection(species, req.selectedIndex));
   });
 };
 
@@ -1069,7 +1105,8 @@ var Layout$1 = function (props, children) {
       null,
       state ? `fritz.state = ${ JSON.stringify(state) };\n` : '',
       'fritz.router = new Worker(\'/routes.js\');'
-    )
+    ),
+    h('script', { src: '/main.js' })
   );
 
   return h(

@@ -4,7 +4,8 @@ import SpeciesList from './SpeciesList.js';
 import { details, list as aliensList } from './api.js';
 import {
   index as indexTemplate,
-  search as searchTemplate
+  search as searchTemplate,
+  selection as selectionTemplate
 } from './templates.js';
 
 export default function(){
@@ -37,10 +38,32 @@ export default function(){
     res.push(searchTemplate(species, query));
   });
 
-  app.post('/select', function(req, res){
-    if(code === 40) {
+  function applySelection(req, res, next) {
+    let { cmd, count } = req.body;
 
+    let selectedIndex = app.state.selectedIndex;
+    let currentIndex = typeof selectedIndex !== 'undefined' ? selectedIndex : -5;
+    switch(cmd) {
+      case 'DOWN':
+        currentIndex = currentIndex + count;
+        break;
+      case 'UP':
+        currentIndex = currentIndex === -1 ? -1 : currentIndex - count;
+      case 'LEFT':
+        currentIndex--;
+        break;
+      case 'RIGHT':
+        currentIndex++;
+        break;
     }
+
+    app.state.selectedIndex = req.selectedIndex = currentIndex;
+    next();
+  }
+
+  app.post('/select', allSpecies, applySelection, function(req, res){
+    let species = app.state.species;
+    res.push(selectionTemplate(species, req.selectedIndex));
   });
 }
 

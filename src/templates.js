@@ -12,6 +12,14 @@ function index(species, state) {
   );
 }
 
+function selection(species, idx) {
+  return (
+    <Layout>
+      <SpeciesList species={species} selected={idx}></SpeciesList>
+    </Layout>
+  );
+}
+
 function search(species, query, state) {
   return (
     <Layout state={state}>
@@ -48,5 +56,6 @@ export {
   SpeciesList,
   index,
   search,
-  article
+  article,
+  selection
 }
