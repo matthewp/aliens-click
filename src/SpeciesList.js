@@ -21,7 +21,7 @@ export default function({ filter, species }, children) {
   let items = filter ? filterSpecies(species, filter) : species;
 
   return (
-    <div>
+    <div data-url="/select" data-event="keyup" data-method="POST" data-include="keyCode" data-no-push>
       <h1>Aliens</h1>
 
       <form action="/search" data-event="keyup" data-no-push>

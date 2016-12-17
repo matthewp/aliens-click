@@ -1,5 +1,7 @@
 import { h } from 'fritz';
 
+//<script src="/service-worker-registration.js"></script>
+
 const isNode = typeof process === 'object' && {}.toString.call(process) === '[object process]';
 
 export default function(props, children) {
@@ -14,7 +16,6 @@ export default function(props, children) {
         }
         fritz.router = new Worker('/routes.js');
       </script>
-      <script src="/service-worker-registration.js"></script>
     </div>
   );
 

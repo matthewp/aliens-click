@@ -590,9 +590,9 @@ fresh@0.3.0:
   version "0.3.0"
   resolved "https://registry.yarnpkg.com/fresh/-/fresh-0.3.0.tgz#651f838e22424e7566de161d8358caa199f83d4f"
 
-fritz@^2.0.2:
-  version "2.0.3"
-  resolved "https://registry.yarnpkg.com/fritz/-/fritz-2.0.3.tgz#b1796a38f42613e62b0a8f463b61b0526a4278c6"
+fritz@^2.0.4:
+  version "2.0.4"
+  resolved "https://registry.yarnpkg.com/fritz/-/fritz-2.0.4.tgz#324bcc4475563b928abb7ea483dd356797d55051"
 
 fs.realpath@^1.0.0:
   version "1.0.0"
@@ -1016,9 +1016,9 @@ rollup-plugin-babel@^2.7.0:
     object-assign "^4.1.0"
     rollup-pluginutils "^1.5.0"
 
-rollup-plugin-json@^2.0.2:
-  version "2.0.2"
-  resolved "https://registry.yarnpkg.com/rollup-plugin-json/-/rollup-plugin-json-2.0.2.tgz#de2ed32fe056ee00f13bfc6f56466d3564f4a6f3"
+rollup-plugin-json@^2.1.0:
+  version "2.1.0"
+  resolved "https://registry.yarnpkg.com/rollup-plugin-json/-/rollup-plugin-json-2.1.0.tgz#7f8e1b2b156932dd934b938dc5547e4118d4121f"
   dependencies:
     rollup-pluginutils "^1.5.2"
 

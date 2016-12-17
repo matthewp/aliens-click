@@ -36,5 +36,11 @@ export default function(){
 
     res.push(searchTemplate(species, query));
   });
+
+  app.post('/select', function(req, res){
+    if(code === 40) {
+
+    }
+  });
 }
 
