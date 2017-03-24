@@ -31,6 +31,7 @@ app.get('/', function(req, res){
     res.type('html').end(html);
   })
   .catch(err => {
+    console.error(err);
     res.status(500).end(err);
   });
 });

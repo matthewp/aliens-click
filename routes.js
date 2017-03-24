@@ -2,8 +2,8 @@
 'use strict';
 
 var Messenger = class {
-  constructor(router) {
-    this.router = router;
+  constructor(app) {
+    this.app = app;
     this._listen();
   }
 
@@ -16,24 +16,27 @@ var Messenger = class {
     let msg = e.data;
 
     switch(msg.type) {
-      case 'initial':
-        this.router.baseURI = msg.baseURI;
-        var request = {
-          method: 'GET',
-          url: msg.url
-        };
-        if(msg.state) {
-          this.router.state = msg.state;
-        }
-        this.router.dispatch(request);
+      case 'render':
+        this.app.render(msg);
         break;
-      case 'request':
-        this.router.dispatch(msg);
+      case 'event':
+        this.app.handleEvent(msg);
+        break;
     }
   }
 
-  send(tree) {
-    postMessage({tree});
+  define(tag) {
+    postMessage({ type: 'tag', tag });
+  }
+
+  dispatch(id, event) {
+    let msg = { id, type: 'event', event };
+    postMessage(msg);
+  }
+
+  send(id, response) {
+    let msg = Object.assign({ id, type: 'render' }, response);
+    postMessage(msg);
   }
 };
 
@@ -473,179 +476,74 @@ index.compile = compile_1;
 index.tokensToFunction = tokensToFunction_1;
 index.tokensToRegExp = tokensToRegExp_1;
 
-var decodeURLComponents = true;
-function decodeURLEncodedURIComponent(val) {
-  if (typeof val !== 'string') { return val; }
-  return decodeURLComponents ? decodeURIComponent(val.replace(/\+/g, ' ')) : val;
-}
-
-class Route {
-  constructor(path, options) {
-    options = options || {};
-    this.path = (path === '*') ? '(.*)' : path;
-    this.method = options.method === undefined ? 'GET' : options.method;
-    this.regexp = index(this.path,
-      this.keys = []
-      /*options*/);
-  }
-
-  isMatch(method, path) {
-    if(this.method !== method) return false;
-
-    var qsIndex = path.indexOf('?'),
-      pathname = ~qsIndex ? path.slice(0, qsIndex) : path,
-      m = this.regexp.exec(decodeURIComponent(pathname));
-
-    return m;
-  }
-
-  match(method, path, params) {
-    let m = this.isMatch(method, path);
-    if(!m) return false;
-
-    var keys = this.keys;
-    for (var i = 1, len = m.length; i < len; ++i) {
-      var key = keys[i - 1];
-      var val = decodeURLEncodedURIComponent(m[i]);
-      if (val !== undefined || !(hasOwnProperty.call(params, key.name))) {
-        params[key.name] = val;
-      }
-    }
-
-    return true;
-  }
-
-  middleware(fn) {
-    return (req, res, next) => {
-      if (this.match(req.method, req.url.pathname, req.params)) {
-        return fn(req, res, next);
-      }
-      next();
-    };
-  }
-}
-
-var Response = class {
-  constructor(request, app) {
-    this.request = request;
-    this.app = app;
-    this.messenger = app.messenger;
-    this.isEnded = false;
-  }
-
-  redirect(route) {
-    this.app.dispatch({
-      method: 'GET',
-      url: route
-    });
-  }
-
-  push(tree) {
-    if(tree[0][1] === 'html') {
-      tree.shift();
-    }
-    if(tree[tree.length - 1][1] === 'html') {
-      tree.pop();
-    }
-    this.messenger.send(tree);
-  }
-
-  end(tree) {
-    if(!this.isEnded) {
-      this.push(tree);
-      this.isEnded = true;
-    }
-  }
-};
-
 class App {
-  static get app() {
-    return this._val;
-  }
-
-  static set app(val) {
-    this._app = val;
-  }
-
-  static hasMatchingRoute(method, path) {
-    return this._app.hasMatchingRoute(method, path);
-  }
-
   constructor() {
     this.messenger = new Messenger(this);
-    this.baseURI = '/';
-    this.routes = [];
-    this.callbacks = [];
-    this.state = {};
-    App.app = this;
+    this.componentMap = new Map();
+    this.idMap = new Map();
+    this.instMap = new WeakMap();
   }
 
-  dispatch(request) {
-    let url = request.url = new URL(request.url, this.currentURL);
-    this.currentURL = url;
-    request.params = {};
-    let response = new Response(request, this);
-    let i = 0;
-    let self = this;
-
-    function next() {
-      let fn = self.callbacks[i++];
-      if(!fn) return; // TODO this should do a unhandled
-      fn(request, response, next);
-    }
-
-    next();
+  define(tag, constr) {
+    this.componentMap.set(tag, constr);
+    this.messenger.define(tag);
   }
 
-  hasMatchingRoute(method, path) {
-    for(var i = 0, len = this.routes.length; i < len; i++) {
-      if(this.routes[i].isMatch(method, path)) return true;
-    }
-    return false;
-  }
-
-  _addRoute(method, path, fns) {
-    // route <path> to <callback ...>
-    if (fns.length) {
-      var route = new Route(/** @type {string} */ (path), { method });
-      for (var i = 0; i < fns.length; ++i) {
-        this.callbacks.push(route.middleware(fns[i]));
-      }
-      this.routes.push(route);
-      // show <path> with [state]
+  handleEvent(msg) {
+    let id = msg.id;
+    let inst = this.idMap.get(id);
+    let response$$1 = Object.create(null);
+    let methodName = 'on' + msg.name[0].toUpperCase() + msg.name.substr(1);
+    let method = inst[methodName];
+    if(method) {
+      method.call(inst);
+      response$$1.tree = inst.render();
+      this.messenger.send(id, response$$1);
+    } else {
+      // TODO warn?
     }
   }
 
-  configure(fn) {
-    fn.call(this);
-    return this;
+  render(msg) {
+    let id = msg.id;
+    let tag = msg.tag;
+    let inst = this.idMap.get(id);
+    let response$$1 = Object.create(null);
+    if(!inst) {
+      let constr = this.componentMap.get(tag);
+      inst = new constr();
+      inst._app = this;
+      this.idMap.set(id, inst);
+      this.instMap.set(inst, id);
+      response$$1.events = constr.observedEvents;
+    }
+    response$$1.tree = inst.render();
+    this.messenger.send(id, response$$1);
   }
 
-  use(path, ...fns) {
-    this._addRoute(null, path || '*', fns);
-    return this;
+  update(inst) {
+    let id = this.instMap.get(inst);
+    let response$$1 = Object.create(null);
+    response$$1.tree = inst.render();
+    this.messenger.send(id, response$$1);
   }
 
-  get(path, ...fns){
-    this._addRoute('GET', path, fns);
-  }
-
-  post(path, ...fns) {
-    this._addRoute('POST', path, fns);
-  }
-
-  put(path, ...fns) {
-    this._addRoute('PUT', path, fns);
-  }
-
-  delete(path, ...fns) {
-    this._addRoute('DELETE', path, fns);
+  dispatch(inst, ev) {
+    let id = this.instMap.get(inst);
+    this.messenger.dispatch(id, ev);
   }
 }
 
 const isNode = typeof process === 'object' && {}.toString.call(process) === '[object process]';
 
+const eventAttrExp = /^on[A-Z]/;
+
 function signal(tagName, attrName, attrValue, attrs) {
+
+  if(eventAttrExp.test(attrName)) {
+    return null;
+  }
+
   switch(attrName) {
     case 'action':
       if(tagName === 'form') {
@@ -744,111 +642,101 @@ var h = function(tag, attrs, children){
   return tree;
 };
 
-function fritz() {
-  return new App();
+class Component {
+  dispatch(ev) {
+    this._app.dispatch(this, ev);
+  }
+
+  update() {
+    this._app.update(this);
+  }
 }
 
+const fritz = new App();
+
 fritz.h = h;
+fritz.Component = Component;
+
+class Tree$1 extends Array {}
+
+function signal$1$1(){}
+
+var constructorRegex = /^\s*class /;
+function callable(fn) {
+  if(constructorRegex.test(fn.toString())) {
+    return function(a, b){
+      return new fn(a, b);
+    };
+  }
+  return fn;
+}
+
+var h$1 = function(tag, attrs, children){
+  const argsLen = arguments.length;
+  if(argsLen === 2) {
+    if(typeof attrs !== 'object' || Array.isArray(attrs)) {
+      children = attrs;
+      attrs = null;
+    }
+  } else if(argsLen > 3 || (children instanceof Tree$1) ||
+    typeof children === 'string') {
+    children = Array.prototype.slice.call(arguments, 2);
+  }
+
+  var isFn = typeof tag === 'function';
+
+  if(isFn) {
+    return callable(tag)(attrs || {}, children);
+  }
+
+  var tree = new Tree$1();
+  if(attrs) {
+    var evs;
+    attrs = Object.keys(attrs).reduce(function(acc, key){
+      var value = attrs[key];
+      acc.push(key);
+      acc.push(value);
+
+      var eventInfo = signal$1$1(tag, key, value, attrs);
+      if(eventInfo) {
+        if(!evs) evs = [];
+        evs.push(eventInfo);
+      }
+
+      return acc;
+    }, []);
+  }
+
+  var open = [1, tag];
+  if(attrs) {
+    open.push(attrs);
+  }
+  if(evs) {
+    open.push(evs);
+  }
+  tree.push(open);
+
+  if(children) {
+    children.forEach(function(child){
+      if(typeof child === "string") {
+        tree.push([4, child]);
+        return;
+      }
+
+      while(child && child.length) {
+        tree.push(child.shift());
+      }
+    });
+  }
+
+  tree.push([2, tag]);
+
+  return tree;
+};
 
 //<script src="/service-worker-registration.js"></script>
 
 const isNode$1 = typeof process === 'object' && {}.toString.call(process) === '[object process]';
-
-var Layout = function (props, children) {
-  let state = props.state;
-
-  const scripts = !isNode$1 ? '' : h(
-    'div',
-    null,
-    h('script', { src: '/node_modules/fritz/window.js' }),
-    h(
-      'script',
-      null,
-      state ? `fritz.state = ${ JSON.stringify(state) };\n` : '',
-      'fritz.router = new Worker(\'/routes.js\');'
-    )
-  );
-
-  return h(
-    'html',
-    null,
-    h(
-      'head',
-      null,
-      h(
-        'title',
-        null,
-        'Aliens app!'
-      ),
-      h('link', { rel: 'stylesheet', href: '/styles.css' }),
-      h('link', { rel: 'manifest', href: '/manifest.json' }),
-      h('meta', { name: 'viewport', content: 'width=device-width, initial-scale=1' }),
-      h('link', { rel: 'preload', href: '/node_modules/fritz/window.js', as: 'script' }),
-      h('link', { rel: 'preload', href: '/routes.js', as: 'worker' }),
-      h('link', { rel: 'preload', href: '/service-worker-registration.js', as: 'script' }),
-      h('link', { rel: 'shortcut icon', href: '/favicon.ico' })
-    ),
-    h(
-      'body',
-      null,
-      h(
-        'header',
-        null,
-        h(
-          'a',
-          { 'class': 'home-button', href: '/' },
-          h(
-            'svg',
-            { 'class': 'home-icon', version: '1.0', xmlns: 'http://www.w3.org/2000/svg', viewBox: '0 0 300.000000 300.000000', preserveAspectRatio: 'xMidYMid meet' },
-            h(
-              'g',
-              { transform: 'translate(0.000000,300.000000) scale(0.100000,-0.100000)', fill: '#210124', stroke: 'none' },
-              h('path', { 'class': 'node', id: 'node1', d: 'M1419 2846 c-69 -55 -1374 -1367 -1398 -1406 -11 -19 -21 -45 -21 -58 0 -35 41 -91 78 -103 72 -24 54 -40 760 664 l662 662 663 -662 c707 -707 689 -691 759 -664 33 13 78 71 78 102 0 13 -9 39 -21 58 -22 36 -1359 1379 -1412 1418 -46 34 -94 31 -148 -11z' }),
-              h('path', { 'class': 'node', id: 'node2', d: 'M923 1784 l-573 -574 0 -393 c1 -293 4 -401 14 -428 20 -56 61 -103 113 -129 46 -24 57 -25 297 -28 195 -3 250 -1 256 9 5 7 9 182 10 388 0 229 5 392 11 416 29 109 138 242 240 292 59 29 153 53 209 53 167 0 339 -110 416 -266 45 -91 54 -173 54 -519 -1 -143 0 -286 0 -318 l0 -59 253 4 252 3 55 31 c38 22 64 46 85 79 l30 48 3 409 3 408 -574 575 c-316 316 -576 575 -578 574 -2 0 -262 -259 -576 -575z' })
-            ),
-            h('g', { transform: 'translate(0.000000,300.000000) scale(0.100000,-0.100000)', fill: '#ADADAD', stroke: 'none' })
-          )
-        )
-      ),
-      h(
-        'main',
-        null,
-        h(
-          'section',
-          null,
-          children
-        )
-      ),
-      h(
-        'footer',
-        null,
-        h(
-          'p',
-          null,
-          'Content courtesy of the ',
-          h(
-            'a',
-            { href: 'http://avp.wikia.com/wiki/Main_Page' },
-            'Xenopedia'
-          ),
-          ', and licensed under the ',
-          h(
-            'a',
-            { href: 'http://www.wikia.com/Licensing' },
-            'CC-BY-SA'
-          ),
-          '.'
-        )
-      ),
-      scripts
-    )
-  );
-};
-
-function first(obj) {
-  let key = Object.keys(obj)[0];
-  return obj[key];
-}
 
 function thumbnail(item, width, height) {
   let tn = item.thumbnail || '';
@@ -862,18 +750,18 @@ function Specie({ specie }) {
   let url = `/article/${ specie.id }`;
   let tn = thumbnail(specie);
 
-  return h(
+  return h$1(
     'li',
     { 'class': 'specie' },
-    h(
+    h$1(
       'a',
       { href: url },
-      h(
+      h$1(
         'figure',
         null,
-        tn ? h('img', { src: tn }) : ''
+        tn ? h$1('img', { src: tn }) : ''
       ),
-      h(
+      h$1(
         'span',
         { 'class': 'specie-title' },
         specie.title
@@ -885,24 +773,24 @@ function Specie({ specie }) {
 var SpeciesList = function ({ filter, species }, children) {
   let items = filter ? filterSpecies(species, filter) : species;
 
-  return h(
+  return h$1(
     'div',
     { 'data-url': '/select', 'data-event': 'keyup', 'data-method': 'POST', 'data-include': 'keyCode', 'data-no-push': true },
-    h(
+    h$1(
       'h1',
       null,
       'Aliens'
     ),
-    h(
+    h$1(
       'form',
       { action: '/search', 'data-event': 'keyup', 'data-no-push': true },
-      h('input', { type: 'text', value: filter ? filter : '', name: 'q', placeholder: 'Search species', 'class': 'alien-search' })
+      h$1('input', { type: 'text', value: filter ? filter : '', name: 'q', placeholder: 'Search species', 'class': 'alien-search' })
     ),
-    h(
+    h$1(
       'ul',
       { 'class': 'species' },
       items.map(specie => {
-        return h(Specie, { specie: specie });
+        return h$1(Specie, { specie: specie });
       })
     )
   );
@@ -917,117 +805,32 @@ function list() {
   return fetch('/api/aliens').then(res => res.json());
 }
 
+class IndexPage extends Component {
+  constructor() {
+    super();
+    this.species = [];
+    list().then(species => {
+      this.species = species;
+      this.update();
+    });
+  }
 
-
-function article(id) {
-  return fetch(`/api/article/${ id }?width=300`).then(res => res.json());
+  render() {
+    return h(SpeciesList, { species: this.species });
+  }
 }
 
-function article$2({ data }) {
-  let intro = data.article.sections[0];
-  let item = first(data.detail.items);
+fritz.define('index-page', IndexPage);
 
-  return h(
-    'div',
-    { 'class': 'species-article' },
-    h(
-      'header',
-      null,
-      h(
-        'h1',
-        null,
-        intro.title
-      )
-    ),
-    h(
-      'article',
-      null,
-      h(
-        'figure',
-        null,
-        h('img', { src: thumbnail(item) })
-      ),
-      h(
-        'div',
-        null,
-        data.article.sections.map(articleSection$1)
-      )
-    )
-  );
-}
 
-function articleSection$1(section, idx) {
-  return h(
-    'section',
-    null,
-    idx === 0 ? '' : h(
-      'h2',
-      null,
-      section.title
-    ),
-    h(
-      'div',
-      null,
-      section.content.map(content => {
-        switch (content.type) {
-          case 'list':
-            return list$1(content);
-          default:
-            return h(
-              'p',
-              null,
-              content.text
-            );
-        }
-      })
-    )
-  );
-}
 
-function list$1(content) {
-  return h(
-    'ul',
-    null,
-    content.elements.map(elem => {
-      return h(
-        'li',
-        null,
-        elem.text
-      );
-    })
-  );
-}
-
-function index$1$1(species, state) {
-  return h(
-    Layout,
-    { state: state },
-    h(SpeciesList, { species: species })
-  );
-}
-
-function search(species, query, state) {
-  return h(
-    Layout,
-    { state: state },
-    h(SpeciesList, { species: species, filter: query })
-  );
-}
-
-function article$1(articleData, state) {
-  return h(
-    Layout,
-    { state: state },
-    h(article$2, { data: articleData })
-  );
-}
-
-var indexRoute = function () {
+/*
+export default function(){
   const app = this;
 
   function allSpecies(req, res, next) {
-    if (!app.state.species) {
-      list().then(species => {
+    if(!app.state.species) {
+      aliensList().then(species => {
         app.state.species = species;
         next();
       });
@@ -1036,182 +839,59 @@ var indexRoute = function () {
     next();
   }
 
-  app.get('/', allSpecies, function (req, res) {
+  app.get('/',
+  allSpecies,
+  function(req, res) {
     let species = app.state.species;
-    res.push(index$1$1(species));
+    res.push(indexTemplate(species));
   });
 
-  app.get('/search', allSpecies, function (req, res) {
+  app.get('/search',
+  allSpecies,
+  function(req, res){
     let query = req.url.searchParams.get('q');
     let species = app.state.species;
 
-    res.push(search(species, query));
+    res.push(searchTemplate(species, query));
   });
 
-  app.post('/select', function (req, res) {
-    if (code === 40) {}
-  });
-};
+  app.post('/select', function(req, res){
+    if(code === 40) {
 
-//<script src="/service-worker-registration.js"></script>
-
-const isNode$2 = typeof process === 'object' && {}.toString.call(process) === '[object process]';
-
-var Layout$1 = function (props, children) {
-  let state = props.state;
-
-  const scripts = !isNode$2 ? '' : h(
-    'div',
-    null,
-    h('script', { src: '/node_modules/fritz/window.js' }),
-    h(
-      'script',
-      null,
-      state ? `fritz.state = ${ JSON.stringify(state) };\n` : '',
-      'fritz.router = new Worker(\'/routes.js\');'
-    )
-  );
-
-  return h(
-    'html',
-    null,
-    h(
-      'head',
-      null,
-      h(
-        'title',
-        null,
-        'Aliens app!'
-      ),
-      h('link', { rel: 'stylesheet', href: '/styles.css' }),
-      h('link', { rel: 'manifest', href: '/manifest.json' }),
-      h('meta', { name: 'viewport', content: 'width=device-width, initial-scale=1' }),
-      h('link', { rel: 'preload', href: '/node_modules/fritz/window.js', as: 'script' }),
-      h('link', { rel: 'preload', href: '/routes.js', as: 'worker' }),
-      h('link', { rel: 'preload', href: '/service-worker-registration.js', as: 'script' }),
-      h('link', { rel: 'shortcut icon', href: '/favicon.ico' })
-    ),
-    h(
-      'body',
-      null,
-      h(
-        'header',
-        null,
-        h(
-          'a',
-          { 'class': 'home-button', href: '/' },
-          h(
-            'svg',
-            { 'class': 'home-icon', version: '1.0', xmlns: 'http://www.w3.org/2000/svg', viewBox: '0 0 300.000000 300.000000', preserveAspectRatio: 'xMidYMid meet' },
-            h(
-              'g',
-              { transform: 'translate(0.000000,300.000000) scale(0.100000,-0.100000)', fill: '#210124', stroke: 'none' },
-              h('path', { 'class': 'node', id: 'node1', d: 'M1419 2846 c-69 -55 -1374 -1367 -1398 -1406 -11 -19 -21 -45 -21 -58 0 -35 41 -91 78 -103 72 -24 54 -40 760 664 l662 662 663 -662 c707 -707 689 -691 759 -664 33 13 78 71 78 102 0 13 -9 39 -21 58 -22 36 -1359 1379 -1412 1418 -46 34 -94 31 -148 -11z' }),
-              h('path', { 'class': 'node', id: 'node2', d: 'M923 1784 l-573 -574 0 -393 c1 -293 4 -401 14 -428 20 -56 61 -103 113 -129 46 -24 57 -25 297 -28 195 -3 250 -1 256 9 5 7 9 182 10 388 0 229 5 392 11 416 29 109 138 242 240 292 59 29 153 53 209 53 167 0 339 -110 416 -266 45 -91 54 -173 54 -519 -1 -143 0 -286 0 -318 l0 -59 253 4 252 3 55 31 c38 22 64 46 85 79 l30 48 3 409 3 408 -574 575 c-316 316 -576 575 -578 574 -2 0 -262 -259 -576 -575z' })
-            ),
-            h('g', { transform: 'translate(0.000000,300.000000) scale(0.100000,-0.100000)', fill: '#ADADAD', stroke: 'none' })
-          )
-        )
-      ),
-      h(
-        'main',
-        null,
-        h(
-          'section',
-          null,
-          children
-        )
-      ),
-      h(
-        'footer',
-        null,
-        h(
-          'p',
-          null,
-          'Content courtesy of the ',
-          h(
-            'a',
-            { href: 'http://avp.wikia.com/wiki/Main_Page' },
-            'Xenopedia'
-          ),
-          ', and licensed under the ',
-          h(
-            'a',
-            { href: 'http://www.wikia.com/Licensing' },
-            'CC-BY-SA'
-          ),
-          '.'
-        )
-      ),
-      scripts
-    )
-  );
-};
-
-var Loading$1 = function () {
-  return h(
-    "div",
-    { "class": "loading" },
-    h(
-      "svg",
-      { version: "1.1", id: "Layer_1", xmlns: "http://www.w3.org/2000/svg", x: "0px", y: "0px", width: "24px", height: "30px", viewBox: "0 0 24 30", style: "enable-background:new 0 0 50 50;" },
-      h(
-        "rect",
-        { x: "0", y: "0", width: "4", height: "10", fill: "#E5FCF5", transform: "translate(0 17.7778)" },
-        h("animateTransform", { attributeType: "xml", attributeName: "transform", type: "translate", values: "0 0; 0 20; 0 0", begin: "0", dur: "0.6s", repeatCount: "indefinite" })
-      ),
-      h(
-        "rect",
-        { x: "10", y: "0", width: "4", height: "10", fill: "#E5FCF5", transform: "translate(0 4.44444)" },
-        h("animateTransform", { attributeType: "xml", attributeName: "transform", type: "translate", values: "0 0; 0 20; 0 0", begin: "0.2s", dur: "0.6s", repeatCount: "indefinite" })
-      ),
-      h(
-        "rect",
-        { x: "20", y: "0", width: "4", height: "10", fill: "#E5FCF5", transform: "translate(0 8.88889)" },
-        h("animateTransform", { attributeType: "xml", attributeName: "transform", type: "translate", values: "0 0; 0 20; 0 0", begin: "0.4s", dur: "0.6s", repeatCount: "indefinite" })
-      )
-    )
-  );
-};
-
-var articleRoute = function () {
-  const app = this;
-
-  function details$$1(req, res, next) {
-    if (!req.articleData) {
-      article(req.params.id).then(data => {
-        req.articleData = data;
-        next();
-      }, next);
-    } else {
-      next();
     }
+  });
+}
+*/
+
+//import indexRoute from './index.js';
+//import articleRoute from './article.js';
+
+//import ArticlePage from './article.js';
+
+class AliensClick extends Component {
+  constructor() {
+    super();
+    this.page = 'index';
   }
 
-  app.get('/article/:id', function (req, res, next) {
-    if (app.state.articleData) {
-      req.articleData = app.state.articleData;
-      delete app.state.articleData;
+  render() {
+    if (this.page === 'index') {
+      return h('index-page', null);
+    } else {
+      return h('article-page', null);
     }
-    next();
-  }, function (req, res, next) {
-    if (!req.articleData) {
-      res.push(h(
-        Layout$1,
-        null,
-        h(Loading$1, null)
-      ));
-    }
-    next();
-  }, details$$1, function (req, res) {
-    let data = req.articleData;
-    res.push(article$1(data));
-  });
-};
+  }
+}
 
+fritz.define('aliens-click', AliensClick);
+
+/*
 const app = fritz();
 
-app.configure(indexRoute).configure(articleRoute);
+app
+  .configure(indexRoute)
+  .configure(articleRoute);
+*/
 
 /**
  * Color scheme

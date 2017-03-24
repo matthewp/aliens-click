@@ -1,4 +1,4 @@
-import { h } from 'fritz';
+import h from 'fritz/hyperscript.js';
 import { first, thumbnail } from './utils.js';
 
 export default article;

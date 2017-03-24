@@ -1,4 +1,4 @@
-import { h } from 'fritz';
+import fritz, { h, Component } from 'fritz';
 import Layout from './Layout.js';
 import SpeciesList from './SpeciesList.js';
 import { details, list as aliensList } from './api.js';
@@ -7,6 +7,26 @@ import {
   search as searchTemplate
 } from './templates.js';
 
+class IndexPage extends Component {
+  constructor() {
+    super();
+    this.species = [];
+    aliensList().then(species => {
+      this.species = species;
+      this.update();
+    });
+  }
+
+  render() {
+    return <SpeciesList species={this.species}></SpeciesList>
+  }
+}
+
+fritz.define('index-page', IndexPage);
+
+export default IndexPage;
+
+/*
 export default function(){
   const app = this;
 
@@ -43,4 +63,4 @@ export default function(){
     }
   });
 }
-
+*/

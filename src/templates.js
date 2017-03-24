@@ -1,4 +1,4 @@
-import { h } from 'fritz';
+import h from 'fritz/hyperscript.js';
 import Layout from './Layout.js';
 import Loading from './Loading.js';
 import SpeciesList from './SpeciesList.js';
@@ -7,7 +7,9 @@ import SpeciesArticle from './SpeciesArticle.js';
 function index(species, state) {
   return (
     <Layout state={state}>
-      <SpeciesList species={species}></SpeciesList>
+      <aliens-click>
+        <SpeciesList species={species}></SpeciesList>
+      </aliens-click>
     </Layout>
   );
 }

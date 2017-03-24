@@ -1,4 +1,4 @@
-import { h } from 'fritz';
+import h from 'fritz/hyperscript.js';
 
 //<script src="/service-worker-registration.js"></script>
 
@@ -14,7 +14,7 @@ export default function(props, children) {
         {
           state ? `fritz.state = ${JSON.stringify(state)};\n` : ''
         }
-        fritz.router = new Worker('/routes.js');
+        fritz.app = new Worker('/routes.js');
       </script>
     </div>
   );
