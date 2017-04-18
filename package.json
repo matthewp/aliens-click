@@ -12,12 +12,14 @@
     "rollup-plugin-babel": "^2.7.0",
     "rollup-plugin-json": "^2.1.0",
     "rollup-plugin-node-resolve": "^2.0.0",
+    "rollup-plugin-string": "^2.0.2",
     "sw-precache": "^4.2.3"
   },
   "dependencies": {
     "compression": "^1.6.2",
     "express": "^4.14.0",
     "fritz": "^3.0.0-alpha.0",
+    "handlebars": "^4.0.6",
     "node-fetch": "^1.6.3"
   },
   "engines": {

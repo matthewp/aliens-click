@@ -1,9 +1,21 @@
 const api = require('./api');
+
 const compression = require('compression');
+const compile = require('./handlebars-compile');
 const express = require('express');
+const stringValue = require('./string-value');
 const templates = require('./templates');
-const idomToString = require('fritz/to-string');
+const thumbnail = require('./thumbnail');
+//const idomToString = require('fritz/to-string');
+const {
+  header,
+  footer
+} = require('./view-common');
 const app = express();
+
+const indexView = compile('partials/index.handlebars');
+
+const speciesListStyle = stringValue(__dirname + '/../src/SpeciesList.css');
 
 const {
   index: indexTemplate,
@@ -23,18 +35,25 @@ app.get('/api/article/:id', function(req, res){
   api.article(id, width).then(result => res.send(result));
 });
 
-app.get('/', function(req, res){
-  api.list()
-  .then(species => {
-    let bc = indexTemplate(species, { species });
-    let html = idomToString(bc);
-    res.type('html').end(html);
-  })
-  .catch(err => {
-    console.error(err);
-    res.status(500).end(err);
-  });
-});
+app.get('/',
+  header(),
+  function(req, res, next){
+    api.list()
+    .then(species => {
+      species.forEach(specie => {
+        specie.tn = thumbnail(specie);
+      });
+      let html = indexView({
+        species,
+        filter: '',
+        styles: speciesListStyle
+      });
+      res.write(html);
+      next();
+    })
+    .catch(next);
+  },
+  footer());
 
 app.get('/article/:id', function(req, res){
   let id = req.params.id;

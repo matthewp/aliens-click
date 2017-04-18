@@ -1,4 +1,4 @@
-import h from 'fritz/hyperscript.js';
+import { h } from 'fritz';
 
 //<script src="/service-worker-registration.js"></script>
 

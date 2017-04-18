@@ -1,9 +1,12 @@
-.PHONY: app watch serve template prod all
+.PHONY: app watch serve template prod win all
 
-all: app templates
+all: app main
 
 app:
-	./node_modules/.bin/rollup -c rollup.config.js -o routes.js src/routes.js
+	./node_modules/.bin/rollup -c rollup.config.js -o app.js src/routes.js
+
+main:
+	./node_modules/.bin/rollup -c rollup.config.js -o main.js src/window/main.js
 
 templates:
 	./node_modules/.bin/rollup src/templates.js -c rollup.config.js -o server/templates.js -f cjs
@@ -16,7 +19,7 @@ release:
 	node scripts/sw.js
 
 watch:
-	find src -name "*.js" | entr make app
+	find src -name "*.js" | entr make all
 
 dev:
 	make serve & make watch

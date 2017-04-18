@@ -1,5 +1,6 @@
-import h from 'fritz/hyperscript.js';
+import { h } from 'fritz';
 import { thumbnail } from './utils.js';
+import styles from './SpeciesList.css';
 
 function Specie({specie}) {
   let url = `/article/${specie.id}`;
@@ -22,6 +23,7 @@ export default function({ filter, species }, children) {
 
   return (
     <div data-url="/select" data-event="keyup" data-method="POST" data-include="keyCode" data-no-push>
+      <style>{styles}</style>
       <h1>Aliens</h1>
 
       <form action="/search" data-event="keyup" data-no-push>
