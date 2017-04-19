@@ -91,7 +91,7 @@ function signal(tagName, attrName, attrValue, attrs) {
 
 class Tree extends Array {}
 
-var h = function(tag, attrs, children){
+function h(tag, attrs, children){
   const argsLen = arguments.length;
   if(argsLen === 2) {
     if(typeof attrs !== 'object' || Array.isArray(attrs)) {
@@ -106,6 +106,11 @@ var h = function(tag, attrs, children){
   var isFn = typeof tag === 'function';
 
   if(isFn) {
+    var localName = tag.prototype.localName;
+    if(localName) {
+      return h(localName, attrs, children);
+    }
+
     return tag(attrs || {}, children);
   }
 
@@ -153,7 +158,7 @@ var h = function(tag, attrs, children){
   tree.push([2, tag]);
 
   return tree;
-};
+}
 
 class Serializable {
   serialize() {
@@ -219,6 +224,7 @@ function trigger(fritz, msg){
 
   if(method) {
     let event = new Event(msg.name);
+    event.value = msg.value;
 
     method.call(inst, event);
     response.type = RENDER;
@@ -259,7 +265,16 @@ fritz._tags = Object.create(null);
 fritz._instances = Object.create(null);
 
 function define(tag, constructor) {
+  if(constructor === undefined) {
+    throw new Error('fritz.define expects 2 arguments');
+  }
+
   fritz._tags[tag] = constructor;
+
+  Object.defineProperty(constructor.prototype, 'localName', {
+    enumerable: false,
+    value: tag
+  });
 
   relay(fritz);
 
@@ -303,7 +318,7 @@ function Specie({ specie }) {
   );
 }
 
-var SpeciesList = function ({ filter, species }, children) {
+var SpeciesList = function ({ filter, species, keyup }, children) {
   let items = filter ? filterSpecies(species, filter) : species;
 
   return h(
@@ -322,7 +337,7 @@ var SpeciesList = function ({ filter, species }, children) {
     h(
       'form',
       { action: '/search', 'data-event': 'keyup', 'data-no-push': true },
-      h('input', { type: 'text', value: filter ? filter : '', name: 'q', placeholder: 'Search species', 'class': 'alien-search' })
+      h('input', { onKeyup: keyup, type: 'text', value: filter ? filter : '', name: 'q', placeholder: 'Search species', 'class': 'alien-search' })
     ),
     h(
       'ul',
@@ -346,6 +361,7 @@ function list() {
 class IndexPage extends Component {
   constructor() {
     super();
+    this.filter = '';
     this.species = [];
     list().then(species => {
       this.species = species;
@@ -353,8 +369,12 @@ class IndexPage extends Component {
     });
   }
 
+  keyup(ev) {
+    this.filter = ev.value;
+  }
+
   render() {
-    return h(SpeciesList, { species: this.species });
+    return h(SpeciesList, { species: this.species, keyup: this.keyup });
   }
 }
 

@@ -5,6 +5,7 @@ import { details, list as aliensList } from './api.js';
 class IndexPage extends Component {
   constructor() {
     super();
+    this.filter = '';
     this.species = [];
     aliensList().then(species => {
       this.species = species;
@@ -12,8 +13,12 @@ class IndexPage extends Component {
     });
   }
 
+  keyup(ev) {
+    this.filter = ev.value;
+  }
+
   render() {
-    return <SpeciesList species={this.species}></SpeciesList>
+    return <SpeciesList species={this.species} keyup={this.keyup}></SpeciesList>
   }
 }
 
