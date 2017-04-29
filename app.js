@@ -189,6 +189,8 @@ function setInstance(fritz, id, instance){
 
 function render(fritz, msg) {
   let id = msg.id;
+  let props = msg.props || {};
+
   let instance = getInstance(fritz, id);
   let events;
   if(!instance) {
@@ -201,6 +203,9 @@ function render(fritz, msg) {
     setInstance(fritz, id, instance);
     events = constructor.observedEvents;
   }
+
+  Object.assign(instance, props);
+
   let tree = instance.render();
   postMessage({
     type: RENDER,
@@ -280,8 +285,14 @@ function define(tag, constructor) {
 
   postMessage({
     type: DEFINE,
-    tag: tag
+    tag: tag,
+    props: constructor.props
   });
+}
+
+function first(obj) {
+  let key = Object.keys(obj)[0];
+  return obj[key];
 }
 
 function thumbnail(item, width, height) {
@@ -357,6 +368,179 @@ function filterSpecies(species, query) {
 function list() {
   return fetch('/api/aliens').then(res => res.json());
 }
+
+
+
+function article(id) {
+  return fetch(`/api/article/${ id }?width=300`).then(res => res.json());
+}
+
+class PageSelect extends Component {
+  static get props() {
+    return {
+      page: { attribute: true },
+      articleId: { attribute: true }
+    };
+  }
+
+  render() {
+    let page = this.page || 'index';
+
+    if (page === 'index') {
+      return h('index-page', null);
+    }
+
+    return h('article-page', { article: this.articleId });
+  }
+}
+
+fritz.define('page-select', PageSelect);
+
+var Loading = function () {
+  return h(
+    "div",
+    { "class": "loading" },
+    h(
+      "svg",
+      { version: "1.1", id: "Layer_1", xmlns: "http://www.w3.org/2000/svg", x: "0px", y: "0px", width: "24px", height: "30px", viewBox: "0 0 24 30", style: "enable-background:new 0 0 50 50;" },
+      h(
+        "rect",
+        { x: "0", y: "0", width: "4", height: "10", fill: "#E5FCF5", transform: "translate(0 17.7778)" },
+        h("animateTransform", { attributeType: "xml", attributeName: "transform", type: "translate", values: "0 0; 0 20; 0 0", begin: "0", dur: "0.6s", repeatCount: "indefinite" })
+      ),
+      h(
+        "rect",
+        { x: "10", y: "0", width: "4", height: "10", fill: "#E5FCF5", transform: "translate(0 4.44444)" },
+        h("animateTransform", { attributeType: "xml", attributeName: "transform", type: "translate", values: "0 0; 0 20; 0 0", begin: "0.2s", dur: "0.6s", repeatCount: "indefinite" })
+      ),
+      h(
+        "rect",
+        { x: "20", y: "0", width: "4", height: "10", fill: "#E5FCF5", transform: "translate(0 8.88889)" },
+        h("animateTransform", { attributeType: "xml", attributeName: "transform", type: "translate", values: "0 0; 0 20; 0 0", begin: "0.4s", dur: "0.6s", repeatCount: "indefinite" })
+      )
+    )
+  );
+};
+
+function article$1({ data }) {
+  let intro = data.article.sections[0];
+  let item = first(data.detail.items);
+
+  return h(
+    'div',
+    { 'class': 'species-article' },
+    h(
+      'header',
+      null,
+      h(
+        'h1',
+        null,
+        intro.title
+      )
+    ),
+    h(
+      'article',
+      null,
+      h(
+        'figure',
+        null,
+        h('img', { src: thumbnail(item) })
+      ),
+      h(
+        'div',
+        null,
+        data.article.sections.map(articleSection)
+      )
+    )
+  );
+}
+
+function articleSection(section, idx) {
+  return h(
+    'section',
+    null,
+    idx === 0 ? '' : h(
+      'h2',
+      null,
+      section.title
+    ),
+    h(
+      'div',
+      null,
+      section.content.map(content => {
+        switch (content.type) {
+          case 'list':
+            return list$1(content);
+          default:
+            return h(
+              'p',
+              null,
+              content.text
+            );
+        }
+      })
+    )
+  );
+}
+
+function list$1(content) {
+  return h(
+    'ul',
+    null,
+    content.elements.map(elem => {
+      return h(
+        'li',
+        null,
+        elem.text
+      );
+    })
+  );
+}
+
+var styles$1 = ".loading {\n  display: flex;\n  justify-content: center;\n}\n\n.loading svg {\n  height: 150px;\n  width: 150px;\n}\n\n.species-article header h1 {\n  font-size: 2.5em;\n}\n\n.species-article figure {\n  float: right;\n}\n\n.species-article p {\n  line-height: 23px;\n}";
+
+class ArticlePage extends Component {
+  static get props() {
+    return {
+      article: { attribute: true }
+    };
+  }
+
+  get article() {
+    return this._article;
+  }
+
+  set article(val) {
+    this._article = Number(val);
+  }
+
+  loadArticle() {
+    const id = this.article;
+    article(id).then(data => {
+      this.data = data;
+      this.update();
+    });
+  }
+
+  render() {
+    if (!this.data) {
+      this.loadArticle();
+    }
+
+    return h(
+      'section',
+      null,
+      h(
+        'style',
+        null,
+        styles$1
+      ),
+      this.data ? h(article$1, { data: this.data }) : h(Loading, null)
+    );
+  }
+}
+
+fritz.define('article-page', ArticlePage);
 
 class IndexPage extends Component {
   constructor() {

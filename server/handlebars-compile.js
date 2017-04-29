@@ -42,3 +42,11 @@ function registerPartials() {
 }
 
 registerPartials();
+
+Handlebars.registerHelper("same", function(a, b, ctx){
+  if(a === b) {
+    return ctx.fn(this);
+  } else {
+    return ctx.inverse(this);
+  }
+});

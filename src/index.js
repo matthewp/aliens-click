@@ -1,6 +1,8 @@
 import fritz, { h, Component } from 'fritz';
 import SpeciesList from './SpeciesList.js';
 import { details, list as aliensList } from './api.js';
+import './PageSelect.js';
+import './ArticlePage.js';
 
 class IndexPage extends Component {
   constructor() {

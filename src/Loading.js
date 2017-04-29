@@ -1,4 +1,4 @@
-import h from 'fritz/hyperscript.js';
+import { h } from 'fritz';
 
 export default function() {
   return (

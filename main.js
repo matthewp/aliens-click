@@ -9,17 +9,15 @@ class SwapShadow extends self.HTMLElement {
   swap() {
     var root = this.parentNode;
 
-    requestAnimationFrame(_ => {
-      var childNodes = [].slice.call(this.childNodes);
+    var childNodes = [].slice.call(this.childNodes);
 
-      var frag = this.ownerDocument.createDocumentFragment();
-      for (var i = 0, len = childNodes.length; i < len; i++) {
-        frag.appendChild(childNodes[i]);
-      }
-      var shadow = root.shadowRoot || root.attachShadow({ mode: 'open' });
-      shadow.appendChild(frag);
-      root.removeChild(this);
-    });
+    var frag = this.ownerDocument.createDocumentFragment();
+    for (var i = 0, len = childNodes.length; i < len; i++) {
+      frag.appendChild(childNodes[i]);
+    }
+    var shadow = root.shadowRoot || root.attachShadow({ mode: 'open' });
+    shadow.appendChild(frag);
+    root.removeChild(this);
   }
 }
 
@@ -347,9 +345,13 @@ function attachShadow(elem) {
 }
 
 const withRender = (Base = HTMLElement) => class extends Base {
-  propsChangedCallback() {
+  get renderRoot() {
     this[_shadowRoot] = this[_shadowRoot] || (this[_shadowRoot] = this.shadowRoot || attachShadow(this));
-    this.rendererCallback(this[_shadowRoot], () => this.renderCallback(this));
+    return this[_shadowRoot];
+  }
+
+  propsChangedCallback() {
+    this.rendererCallback(this.renderRoot, () => this.renderCallback(this));
     this.renderedCallback();
   }
 
@@ -1625,7 +1627,8 @@ const withComponent = (Base = HTMLElement) => class extends withUnique(withRende
     this._worker.postMessage({
       type: RENDER,
       tag: this.localName,
-      id: this._id
+      id: this._id,
+      props: this.props
     });
   }
 
@@ -1659,8 +1662,13 @@ const Component = withComponent();
 function define(fritz, msg) {
   let worker = this;
   let tagName = msg.tag;
+  let props = msg.props || {};
 
   class OffThreadElement extends Component {
+    static get props() {
+      return props;
+    }
+
     constructor() {
       super();
       this._worker = worker;
@@ -1718,6 +1726,37 @@ function handleMessage(ev) {
 
 fritz.use = use;
 
+var Router = class {
+  constructor() {
+    this.pageSelect = document.querySelector('page-select');
+
+    var root = document.body;
+    root.addEventListener('click', this);
+  }
+
+  handleEvent(ev) {
+    var paths = ev.composedPath();
+    for (var i = 0, len = paths.length; i < len; i++) {
+      let el = paths[i];
+      if (el.localName === 'a') {
+        if (/article\//.test(el.pathname)) {
+          ev.preventDefault();
+          this.goToArticle(el.pathname);
+        }
+      }
+    }
+  }
+
+  goToArticle(pth) {
+    let id = Number(pth.split("/").pop());
+    this.pageSelect.page = "article";
+    this.pageSelect.articleId = id;
+    history.pushState(null, 'Article', pth);
+  }
+};
+
 fritz.use(new Worker('/app.js'));
+
+new Router();
 
 }());

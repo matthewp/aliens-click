@@ -6,7 +6,7 @@ const express = require('express');
 const stringValue = require('./string-value');
 const templates = require('./templates');
 const thumbnail = require('./thumbnail');
-//const idomToString = require('fritz/to-string');
+const { first } = require('./utils');
 const {
   header,
   footer
@@ -14,8 +14,10 @@ const {
 const app = express();
 
 const indexView = compile('partials/index.handlebars');
+const articleView = compile('partials/article.handlebars');
 
 const speciesListStyle = stringValue(__dirname + '/../src/SpeciesList.css');
+const articlePageStyle = stringValue(__dirname + '/../src/ArticlePage.css');
 
 const {
   index: indexTemplate,
@@ -36,39 +38,48 @@ app.get('/api/article/:id', function(req, res){
 });
 
 app.get('/',
-  header(),
-  function(req, res, next){
-    api.list()
-    .then(species => {
-      species.forEach(specie => {
-        specie.tn = thumbnail(specie);
-      });
-      let html = indexView({
-        species,
-        filter: '',
-        styles: speciesListStyle
-      });
-      res.write(html);
-      next();
-    })
-    .catch(next);
-  },
-  footer());
+header(),
+function(req, res, next){
+  api.list()
+  .then(species => {
+    species.forEach(specie => {
+      specie.tn = thumbnail(specie);
+    });
+    let html = indexView({
+      page: 'index',
+      species,
+      filter: '',
+      styles: speciesListStyle
+    });
+    res.write(html);
+    next();
+  })
+  .catch(next);
+},
+footer());
 
-app.get('/article/:id', function(req, res){
+app.get('/article/:id',
+header(),
+function(req, res, next){
   let id = req.params.id;
 
   api.article(id, '300')
   .then(data => {
-    let bc = articleTemplate(data, { articleData: data });
-    let html = idomToString(bc);
-    res.type('html').end(html);
+    let intro = data.article.sections[0];
+    let item = first(data.detail.items);
+    let html = articleView({
+      page: 'article',
+      id,
+      intro,
+      data,
+      thumbnail: thumbnail(item)
+    });
+    res.write(html);
+    next();
   })
-  .catch(err => {
-    console.log(err);
-    res.status(500).end(err);
-  });
-});
+  .catch(next);
+},
+footer());
 
 app.get('/search', function(req, res){
   let q = req.query.q;
