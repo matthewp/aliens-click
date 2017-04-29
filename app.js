@@ -334,7 +334,7 @@ var SpeciesList = function ({ filter, species, keyup }, children) {
 
   return h(
     'div',
-    { 'data-url': '/select', 'data-event': 'keyup', 'data-method': 'POST', 'data-include': 'keyCode', 'data-no-push': true },
+    null,
     h(
       'style',
       null,
@@ -347,8 +347,9 @@ var SpeciesList = function ({ filter, species, keyup }, children) {
     ),
     h(
       'form',
-      { action: '/search', 'data-event': 'keyup', 'data-no-push': true },
-      h('input', { onKeyup: keyup, type: 'text', value: filter ? filter : '', name: 'q', placeholder: 'Search species', 'class': 'alien-search' })
+      { action: '/search' },
+      h('input', { onKeyup: keyup, type: 'text', value: filter ? filter : '',
+        name: 'q', placeholder: 'Search species', 'class': 'alien-search' })
     ),
     h(
       'ul',
@@ -516,6 +517,10 @@ class ArticlePage extends Component {
 
   loadArticle() {
     const id = this.article;
+    if (isNaN(id)) {
+      return;
+    }
+
     article(id).then(data => {
       this.data = data;
       this.update();

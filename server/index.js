@@ -65,6 +65,7 @@ function(req, res, next){
 
   api.article(id, '300')
   .then(data => {
+    req.appState = data;
     let intro = data.article.sections[0];
     let item = first(data.detail.items);
     let html = articleView({

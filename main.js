@@ -1755,6 +1755,10 @@ var Router = class {
   }
 };
 
+const state = document.getElementById('launcher').dataset.state;
+
+debugger;
+
 fritz.use(new Worker('/app.js'));
 
 new Router();

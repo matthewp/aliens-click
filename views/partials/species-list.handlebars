@@ -1,9 +1,10 @@
-<div data-url="/select" data-event="keyup" data-method="POST" data-include="keyCode" data-no-push>
+<div>
   <style>{{styles}}</style>
   <h1>Aliens</h1>
 
-  <form action="/search" data-event="keyup" data-no-push>
-    <input type="text" value="{{filter}}" name="q" placeholder="Search species" class="alien-search" />
+  <form action="/search">
+    <input type="text" value="{{filter}}" name="q"
+      placeholder="Search species"class="alien-search" />
   </form>
   <ul class="species">
     {{#species}}

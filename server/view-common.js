@@ -13,7 +13,10 @@ exports.header = function(model){
 
 exports.footer = function(model){
   return function(req, res){
-    res.write(footerView(model));
+    let state = Object.assign({}, model, {
+      state: req.appState
+    });
+    res.write(footerView(state));
     res.end();
   };
 };

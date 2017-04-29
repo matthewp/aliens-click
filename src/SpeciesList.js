@@ -22,12 +22,13 @@ export default function({ filter, species, keyup }, children) {
   let items = filter ? filterSpecies(species, filter) : species;
 
   return (
-    <div data-url="/select" data-event="keyup" data-method="POST" data-include="keyCode" data-no-push>
+    <div>
       <style>{styles}</style>
       <h1>Aliens</h1>
 
-      <form action="/search" data-event="keyup" data-no-push>
-        <input onKeyup={keyup} type="text" value={ filter ? filter : '' } name="q" placeholder="Search species" class="alien-search" />
+      <form action="/search">
+        <input onKeyup={keyup} type="text" value={ filter ? filter : '' }
+          name="q" placeholder="Search species" class="alien-search" />
       </form>
       <ul class="species">
         {items.map(specie => {

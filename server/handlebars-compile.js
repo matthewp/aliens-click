@@ -50,3 +50,7 @@ Handlebars.registerHelper("same", function(a, b, ctx){
     return ctx.inverse(this);
   }
 });
+
+Handlebars.registerHelper("toJSON", function(data){
+  return JSON.stringify(data);
+});

@@ -21,6 +21,10 @@ class ArticlePage extends Component {
 
   loadArticle() {
     const id = this.article;
+    if(isNaN(id)) {
+      return;
+    }
+
     api.article(id).then(data => {
       this.data = data;
       this.update();
