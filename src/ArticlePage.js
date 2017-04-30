@@ -10,6 +10,12 @@ class ArticlePage extends Component {
       article: { attribute: true }
     };
   }
+  
+  constructor() {
+    super();
+    this.data = fritz.state;
+    fritz.state = null;
+  }
 
   get article() {
     return this._article;
@@ -33,7 +39,7 @@ class ArticlePage extends Component {
 
   render() {
     if(!this.data) {
-      this.loadArticle();;
+      this.loadArticle();
     }
 
     return (

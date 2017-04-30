@@ -15,6 +15,9 @@ export default class {
         if(/article\//.test(el.pathname)) {
           ev.preventDefault();
           this.goToArticle(el.pathname);
+        } else if(el.pathname === '/') {
+          ev.preventDefault();
+          this.goToIndex();
         }
       }
     }
@@ -22,8 +25,13 @@ export default class {
 
   goToArticle(pth) {
     let id = Number(pth.split("/").pop());
-    this.pageSelect.page = "article";
+    this.pageSelect.page = 'article';
     this.pageSelect.articleId = id;
     history.pushState(null, 'Article', pth);
+  }
+
+  goToIndex() {
+    this.pageSelect.page = 'index';
+    history.pushState(null, 'Aliens app!', '/');
   }
 }

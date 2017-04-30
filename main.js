@@ -1,27 +1,7 @@
 (function () {
 'use strict';
 
-class SwapShadow extends self.HTMLElement {
-  connectedCallback() {
-    this.swap();
-  }
-
-  swap() {
-    var root = this.parentNode;
-
-    var childNodes = [].slice.call(this.childNodes);
-
-    var frag = this.ownerDocument.createDocumentFragment();
-    for (var i = 0, len = childNodes.length; i < len; i++) {
-      frag.appendChild(childNodes[i]);
-    }
-    var shadow = root.shadowRoot || root.attachShadow({ mode: 'open' });
-    shadow.appendChild(frag);
-    root.removeChild(this);
-  }
-}
-
-customElements.define('swap-shadow', SwapShadow);
+class SwapShadow extends self.HTMLElement{connectedCallback(){this.swap();}swap(){var a=this.parentNode,b=[].slice.call(this.childNodes),c=this.ownerDocument.createDocumentFragment();for(var d=0,e=b.length;d<e;d++)c.appendChild(b[d]);var f=a.shadowRoot||a.attachShadow({mode:'open'});f.appendChild(c),a.removeChild(this);}}customElements.define('swap-shadow',SwapShadow);
 
 const root = typeof window === 'undefined' ? global : window;
 
@@ -40,7 +20,7 @@ function dashCase(str) {
   return str.split(/([_A-Z])/).reduce((one, two, idx) => {
     const dash = !one || idx % 2 === 0 ? '' : '-';
     two = two === '_' ? '' : two;
-    return `${one}${dash}${two.toLowerCase()}`;
+    return `${ one }${ dash }${ two.toLowerCase() }`;
   });
 }
 
@@ -61,7 +41,7 @@ function debounce(cbFunc) {
     cbArgs = args;
     if (!scheduled) {
       scheduled = true;
-      elem.textContent = `${i}`;
+      elem.textContent = `${ i }`;
       i += 1;
     }
   };
@@ -87,7 +67,15 @@ function uniqueId(description) {
   });
 }
 
-var _extends$1 = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+var _extends$1 = Object.assign || function (target) {
+  for (var i = 1; i < arguments.length; i++) {
+    var source = arguments[i];for (var key in source) {
+      if (Object.prototype.hasOwnProperty.call(source, key)) {
+        target[key] = source[key];
+      }
+    }
+  }return target;
+};
 
 const _definedProps = sym('_definedProps');
 const _normPropDef = sym('_normPropDef');
@@ -185,7 +173,15 @@ function syncPropertyToAttribute(elem, target, serialize, val) {
   }
 }
 
-var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+var _extends = Object.assign || function (target) {
+  for (var i = 1; i < arguments.length; i++) {
+    var source = arguments[i];for (var key in source) {
+      if (Object.prototype.hasOwnProperty.call(source, key)) {
+        target[key] = source[key];
+      }
+    }
+  }return target;
+};
 
 // Unfortunately the polyfills still seem to double up on lifecycle calls. In
 // order to get around this, we need guards to prevent us from executing them
@@ -366,7 +362,7 @@ let suffix = 0;
 
 function formatName(prefix, suffix) {
   prefix = prefix || 'element';
-  return (prefix.indexOf('-') === -1 ? `x-${prefix}` : prefix) + (suffix ? `-${suffix}` : '');
+  return (prefix.indexOf('-') === -1 ? `x-${ prefix }` : prefix) + (suffix ? `-${ suffix }` : '');
 }
 
 function generateName(Ctor) {
@@ -1574,15 +1570,15 @@ var elementOpen_1 = elementOpen;
 var elementClose_1 = elementClose;
 var text_1 = text;
 
-function render$1(bc, component){
+function render$1(bc, component) {
   var n;
-  for(var i = 0, len = bc.length; i < len; i++) {
+  for (var i = 0, len = bc.length; i < len; i++) {
     n = bc[i];
-    switch(n[0]) {
+    switch (n[0]) {
       // Open
       case 1:
-        if(n[3]) {
-          for(var j = 0, jlen = n[3].length; j < jlen; j++) {
+        if (n[3]) {
+          for (var j = 0, jlen = n[3].length; j < jlen; j++) {
             let handler = component.addEventCallback(n[3][j][2]);
             n[2].push(n[3][j][1], handler);
           }
@@ -1609,6 +1605,8 @@ const DEFINE = 'define';
 const TRIGGER = 'trigger';
 const RENDER = 'render';
 const EVENT = 'event';
+const STATE = 'state';
+const DESTROY = 'destroy';
 
 function postEvent(event, inst, handle) {
   let worker = inst._worker;
@@ -1623,7 +1621,7 @@ function postEvent(event, inst, handle) {
 }
 
 const withComponent = (Base = HTMLElement) => class extends withUnique(withRender(withProps(Base))) {
-  rendererCallback (shadowRoot, renderCallback) {
+  rendererCallback(shadowRoot, renderCallback) {
     this._worker.postMessage({
       type: RENDER,
       tag: this.localName,
@@ -1645,7 +1643,7 @@ const withComponent = (Base = HTMLElement) => class extends withUnique(withRende
 
   addEventCallback(handleId) {
     var self = this;
-    return function(ev){
+    return function (ev) {
       ev.preventDefault();
       postEvent(ev, self, handleId);
     };
@@ -1658,6 +1656,18 @@ const withComponent = (Base = HTMLElement) => class extends withUnique(withRende
 };
 
 const Component = withComponent();
+
+function getInstance(fritz, id) {
+  return fritz._instances[id];
+}
+
+function setInstance(fritz, id, instance) {
+  fritz._instances[id] = instance;
+}
+
+function delInstance(fritz, id) {
+  delete fritz._instances[id];
+}
 
 function define(fritz, msg) {
   let worker = this;
@@ -1673,46 +1683,73 @@ function define(fritz, msg) {
       super();
       this._worker = worker;
       this._id = ++fritz._id;
-      fritz._instances[this._id] = this;
+    }
+
+    connectedCallback() {
+      super.connectedCallback();
+      setInstance(fritz, this._id, this);
+    }
+
+    disconnectedCallback() {
+      super.disconnectedCallback();
+      delInstance(fritz, this._id);
+      this._worker.postMessage({
+        type: DESTROY,
+        id: this._id
+      });
     }
   }
 
   customElements.define(tagName, OffThreadElement);
 }
 
-function render(fritz, msg){
+function render(fritz, msg) {
   let id = msg.id;
-  let instance = fritz._instances[msg.id];
-  instance.doRenderCallback(msg.tree);
-  if(msg.events) {
-    instance.observedEventsCallback(msg.events);
+  let instance = getInstance(fritz, msg.id);
+  if (instance !== undefined) {
+    instance.doRenderCallback(msg.tree);
+    if (msg.events) {
+      instance.observedEventsCallback(msg.events);
+    }
   }
 }
 
 function trigger(fritz, msg) {
-  let inst = getInstance(msg.id, fritz);
+  let inst = getInstance(fritz, msg.id);
   let event = new Event(msg.event.type, {
     bubbles: true
   });
-  inst.dispatchEvent(event);  
+  inst.dispatchEvent(event);
 }
 
-function getInstance(id, fritz){
-  return fritz._instances[id];
+function sendState(fritz, worker) {
+  let workers = worker ? [worker] : fritz._workers;
+  let state = fritz.state;
+  workers.forEach(function (worker) {
+    worker.postMessage({
+      type: STATE,
+      state: state
+    });
+  });
 }
 
 const fritz = Object.create(null);
 fritz.tags = Object.create(null);
 fritz._id = 1;
 fritz._instances = Object.create(null);
+fritz._workers = [];
 
 function use(worker) {
+  fritz._workers.push(worker);
   worker.addEventListener('message', handleMessage);
+  if (fritz.state) {
+    sendState(fritz, worker);
+  }
 }
 
 function handleMessage(ev) {
   let msg = ev.data;
-  switch(msg.type) {
+  switch (msg.type) {
     case DEFINE:
       define.call(this, fritz, msg);
       break;
@@ -1726,41 +1763,18 @@ function handleMessage(ev) {
 
 fritz.use = use;
 
-var Router = class {
-  constructor() {
-    this.pageSelect = document.querySelector('page-select');
-
-    var root = document.body;
-    root.addEventListener('click', this);
+Object.defineProperty(fritz, 'state', {
+  set: function (val) {
+    this._state = val;
+    sendState(fritz);
+  },
+  get: function () {
+    return this._state;
   }
+});
 
-  handleEvent(ev) {
-    var paths = ev.composedPath();
-    for (var i = 0, len = paths.length; i < len; i++) {
-      let el = paths[i];
-      if (el.localName === 'a') {
-        if (/article\//.test(el.pathname)) {
-          ev.preventDefault();
-          this.goToArticle(el.pathname);
-        }
-      }
-    }
-  }
+var Router = class{constructor(){this.pageSelect=document.querySelector('page-select');var a=document.body;a.addEventListener('click',this);}handleEvent(a){var b=a.composedPath();for(var c=0,d=b.length;c<d;c++){let e=b[c];'a'===e.localName&&(/article\//.test(e.pathname)?(a.preventDefault(),this.goToArticle(e.pathname)):'/'===e.pathname&&(a.preventDefault(),this.goToIndex()));}}goToArticle(a){let b=+a.split('/').pop();this.pageSelect.page='article',this.pageSelect.articleId=b,history.pushState(null,'Article',a);}goToIndex(){this.pageSelect.page='index',history.pushState(null,'Aliens app!','/');}};
 
-  goToArticle(pth) {
-    let id = Number(pth.split("/").pop());
-    this.pageSelect.page = "article";
-    this.pageSelect.articleId = id;
-    history.pushState(null, 'Article', pth);
-  }
-};
-
-const state = document.getElementById('launcher').dataset.state;
-
-debugger;
-
-fritz.use(new Worker('/app.js'));
-
-new Router();
+fritz.use(new Worker('/app.js'));const state=document.getElementById('launcher').dataset.state;state&&(fritz.state=JSON.parse(state)),new Router;
 
 }());
