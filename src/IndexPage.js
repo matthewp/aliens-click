@@ -11,7 +11,8 @@ class IndexPage extends Component {
     this.species = [];
 
     if(fritz.state) {
-      this.species = fritz.state;
+      this.filter = fritz.state.filter;
+      this.species = fritz.state.species;
     } else {
       aliensList().then(species => {
         this.species = species;

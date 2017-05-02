@@ -9,7 +9,7 @@ main:
 	./node_modules/.bin/rollup -c rollup.config.js -o main.js src/window/main.js
 
 serve:
-	node server/index.js
+	node lib/index.js
 
 release:
 	BABEL_ENV=production make all
