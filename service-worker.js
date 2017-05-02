@@ -37,7 +37,7 @@
 /* eslint-disable indent, no-unused-vars, no-multiple-empty-lines, max-nested-callbacks, space-before-function-paren, quotes, comma-spacing */
 'use strict';
 
-var precacheConfig = [["/node_modules/fritz/window.js","5f09deb8bf2fe9806148d4644f2df3c4"],["/routes.js","14293acbf12934b3312519af61c4a42e"],["/styles.css","76fd9015788b72d9630ac412683b5870"]];
+var precacheConfig = [["/node_modules/fritz/window.js","3934f62eb469fdb9aec3fe475117bb0d"],["/styles.css","7ce099e3db3ce6dd731efacb0a8a2d47"]];
 var cacheName = 'sw-precache-v2--' + (self.registration ? self.registration.scope : '');
 
 

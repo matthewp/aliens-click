@@ -1,0 +1,21 @@
+.loading {
+  display: flex;
+  justify-content: center;
+}
+
+.loading svg {
+  height: 150px;
+  width: 150px;
+}
+
+.species-article header h1 {
+  font-size: 2.5em;
+}
+
+.species-article figure {
+  float: right;
+}
+
+.species-article p {
+  line-height: 23px;
+}

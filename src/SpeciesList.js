@@ -1,5 +1,6 @@
 import { h } from 'fritz';
 import { thumbnail } from './utils.js';
+import styles from './SpeciesList.css';
 
 function Specie({specie}) {
   let url = `/article/${specie.id}`;
@@ -17,15 +18,17 @@ function Specie({specie}) {
   );
 }
 
-export default function({ filter, species }, children) {
+export default function({ filter, species, keyup }, children) {
   let items = filter ? filterSpecies(species, filter) : species;
 
   return (
     <div>
+      <style>{styles}</style>
       <h1>Aliens</h1>
 
-      <form action="/search" data-event="keyup" data-no-push>
-        <input type="text" value={ filter ? filter : '' } name="q" placeholder="Search species" class="alien-search" />
+      <form action="/search">
+        <input onKeyup={keyup} type="text" value={ filter ? filter : '' }
+          name="q" placeholder="Search species" class="alien-search" />
       </form>
       <ul class="species">
         {items.map(specie => {

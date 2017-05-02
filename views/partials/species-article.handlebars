@@ -1,0 +1,35 @@
+<div class="species-article">
+  <header>
+    <h1>{{intro.title}}</h1>
+  </header>
+  <article>
+    <figure>
+      <img src={{thumbnail}} />
+    </figure>
+
+    <div>
+      {{#each data.article.sections}}
+        <section>
+          {{#same @index 0}}
+          {{else}}
+            <h2>{{title}}</h2>
+          {{/same}}
+
+          <div>
+            {{#content}}
+              {{#same type 'list'}}
+              <ul>
+                {{#elements}}
+                  <li>{{text}}</li>
+                {{/elements}}
+              </ul>
+              {{else}}
+                <p>{{text}}</p>
+              {{/same}}
+            {{/content}}
+          </div>
+        </section>
+      {{/each}}
+    </div>
+  </article>
+</div>

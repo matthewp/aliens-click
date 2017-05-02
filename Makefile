@@ -1,22 +1,22 @@
-.PHONY: app watch serve template prod all
+.PHONY: app watch serve prod main release all
 
-all: app templates
+all: app main
 
 app:
-	./node_modules/.bin/rollup -c rollup.config.js -o routes.js src/routes.js
+	./node_modules/.bin/rollup -c rollup.config.js -o app.js src/IndexPage.js
 
-templates:
-	./node_modules/.bin/rollup src/templates.js -c rollup.config.js -o server/templates.js -f cjs
+main:
+	./node_modules/.bin/rollup -c rollup.config.js -o main.js src/window/main.js
 
 serve:
-	node server/index.js
+	node lib/index.js
 
 release:
 	BABEL_ENV=production make all
 	node scripts/sw.js
 
 watch:
-	find src -name "*.js" | entr make app
+	find src -name "*.js" | entr make all
 
 dev:
 	make serve & make watch
