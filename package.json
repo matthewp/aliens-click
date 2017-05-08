@@ -1,9 +1,9 @@
 {
   "name": "aliens-app",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "main": "index.html",
   "scripts": {
-    "start": "node server/index.js"
+    "start": "node lib/index.js"
   },
   "devDependencies": {
     "babel-plugin-transform-react-jsx": "^6.8.0",
