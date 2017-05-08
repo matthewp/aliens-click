@@ -13,6 +13,7 @@ class IndexPage extends Component {
     if(fritz.state) {
       this.filter = fritz.state.filter;
       this.species = fritz.state.species;
+      fritz.state = null;
     } else {
       aliensList().then(species => {
         this.species = species;

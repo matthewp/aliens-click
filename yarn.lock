@@ -2,6 +2,10 @@
 # yarn lockfile v1
 
 
+"@webcomponents/custom-elements@^1.0.0-rc.3":
+  version "1.0.0-rc.3"
+  resolved "https://registry.yarnpkg.com/@webcomponents/custom-elements/-/custom-elements-1.0.0-rc.3.tgz#5e406fc4e9b123c4c8f0f816f18deb6ef763c36d"
+
 accepts@~1.3.3:
   version "1.3.3"
   resolved "https://registry.yarnpkg.com/accepts/-/accepts-1.3.3.tgz#c3ca7434938648c3e0d9c1e328dd68b622c284ca"
@@ -456,6 +460,10 @@ cliui@^2.1.0:
     center-align "^0.1.1"
     right-align "^0.1.1"
     wordwrap "0.0.2"
+
+cloudydom@^1.0.6:
+  version "1.0.6"
+  resolved "https://registry.yarnpkg.com/cloudydom/-/cloudydom-1.0.6.tgz#86ed403325984c14c38413d39bcb7b26d8bb2550"
 
 commander@2.9.x:
   version "2.9.0"

@@ -1816,7 +1816,7 @@ var Router = class {
 
 fritz.use(new Worker('/app.js'));
 
-const state = document.getElementById('launcher').dataset.state;
+const state = document.getElementById('state-from-server').dataset.state;
 if (state) {
   fritz.state = JSON.parse(state);
 }
