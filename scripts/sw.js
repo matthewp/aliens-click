@@ -1,12 +1,12 @@
 const path = require('path');
 const swPrecache = require('sw-precache');
-const rootDir = path.join(__dirname, '/..');
+const rootDir = path.join(__dirname, '/../public');
 
-swPrecache.write(__dirname + '/../service-worker.js', {
+swPrecache.write(__dirname + '/../public/service-worker.js', {
   staticFileGlobs: [
-    `${rootDir}/routes.js`,
+    `${rootDir}/app.js`,
     `${rootDir}/styles.css`,
-    `${rootDir}/node_modules/fritz/window.js`,
+    `${rootDir}/main.js`,
   ],
   stripPrefix: rootDir
 });
