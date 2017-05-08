@@ -17,6 +17,7 @@
   },
   "dependencies": {
     "@webcomponents/custom-elements": "^1.0.0-rc.3",
+    "clean-css": "^4.1.1",
     "cloudydom": "^1.0.6",
     "compression": "^1.6.2",
     "express": "^4.14.0",
