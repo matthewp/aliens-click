@@ -12,13 +12,13 @@
 
   polys
   .then(function(){
-    return load('/main.js');
+    return load('/m.js');
   });
 
   function load(src) {
     var script = document.createElement('script');
     script.src = src;
-    
+
     return new Promise(resolve => {
       script.onload = () => resolve();
       document.body.appendChild(script);
