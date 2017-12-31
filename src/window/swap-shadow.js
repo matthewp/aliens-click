@@ -7,7 +7,7 @@ class SwapShadow extends self.HTMLElement {
     var root = this.parentNode;
 
     var childNodes = [].slice.call(this.childNodes);
-    
+
     var frag = this.ownerDocument.createDocumentFragment();
     for(var i = 0, len = childNodes.length; i < len; i++) {
       frag.appendChild(childNodes[i]);

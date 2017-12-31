@@ -1,12 +1,6 @@
+import '../page-select.js';
 
-export default class {
-  constructor() {
-    this.pageSelect = document.querySelector('page-select');
-    
-    var root = document.body;
-    root.addEventListener('click', this);
-  }
-
+let prototype = {
   handleEvent(ev) {
     var paths = ev.composedPath();
     for(var i = 0, len = paths.length; i < len; i++) {
@@ -21,17 +15,33 @@ export default class {
         }
       }
     }
-  }
+  },
 
   goToArticle(pth) {
-    let id = Number(pth.split("/").pop());
-    this.pageSelect.page = 'article';
-    this.pageSelect.articleId = id;
+    let id = Number(pth.split('/').pop());
+    let ps = this.pageSelect;
+    ps.setAttribute('page', 'article');
+    ps.setAttribute('article-id', id);
     history.pushState(null, 'Article', pth);
-  }
+  },
 
   goToIndex() {
-    this.pageSelect.page = 'index';
+    let ps = this.pageSelect;
+    ps.setAttribute('page', 'index');
+    ps.removeAttribute('article-id');
     history.pushState(null, 'Aliens app!', '/');
   }
+};
+
+function startRouter() {
+  let router = Object.create(prototype, {
+    pageSelect: {
+      value: document.querySelector('page-select')
+    }
+  });
+
+  let root = document.body;
+  root.addEventListener('click', router);
 }
+
+export { startRouter }

@@ -1,1 +1,1 @@
-console.log("YA");
+import '../src/main.js';
