@@ -47,3 +47,7 @@ footer a,
 footer a:visited {
   color: var(--alt-link-color);
 }
+
+.metadata {
+  display: none;
+}

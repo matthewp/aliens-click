@@ -5,7 +5,16 @@ if(state) {
   state = Object.create(null);
 }
 
+function getInitialStateOnce() {
+  let s = state;
+  if(s != null) {
+    state = null;
+  }
+  return s;
+}
+
 export {
   state,
-  state as initialState
+  state as initialState,
+  getInitialStateOnce
 };

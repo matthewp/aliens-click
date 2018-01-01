@@ -1,6 +1,6 @@
 import { IndexViewModel } from './connection.js';
 import { render, html } from './lit-html.js';
-import { initialState } from './initial-state.js';
+import { getInitialStateOnce } from './initial-state.js';
 import { ensureShadow, upgradeStyles } from './mixins.js';
 import './window/swap-shadow.js';
 
@@ -14,13 +14,19 @@ class IndexPage extends BaseElement {
   constructor() {
     super();
 
-    let { filter, species } = initialState;
+    let state = getInitialStateOnce();
+    let { filter, species } = state || {};
     this.vm = new IndexViewModel(species, filter);
   }
 
   connectedCallback() {
     super.connectedCallback();
-    this.update();
+    this.loadSpecies();
+  }
+
+  async loadSpecies() {
+    await this.vm.loadSpecies();
+    return this.update();
   }
 
   handleEvent(ev) {

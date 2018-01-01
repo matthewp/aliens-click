@@ -40,7 +40,7 @@ class PageSelect extends HTMLElement {
       return html`<index-page></index-page>`;
     } else {
       let articleId = this.getAttribute('article-id');
-      return html`<article-page article=${articleId}></article-page>`;
+      return html`<article-page article-id=${articleId}></article-page>`;
     }
   }
 }

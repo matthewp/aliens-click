@@ -1,6 +1,8 @@
-import { connect } from 'https://unpkg.com/theda@1.0.0/theda.js';
+import { connect } from 'https://unpkg.com/theda@1.0.1/theda.js';
 
-const worker = new Worker('./src/worker.js');
+const addr = document.getElementById('worker-address').dataset.workerAddress;
+
+const worker = new Worker(addr);
 const api = connect(worker);
 
 const { ArticleViewModel, IndexViewModel } = api;
