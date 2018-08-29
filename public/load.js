@@ -3,16 +3,16 @@
   var polys = Promise.resolve();
 
   if(typeof ShadowRoot !== 'function') {
-    polys = load('/sd.js');
+    polys = load('/assets/sd.js');
   }
 
   if(typeof customElements === 'undefined') {
-    polys = polys.then(() => load('/ce.js'));
+    polys = polys.then(() => load('/assets/ce.js'));
   }
 
   polys
   .then(function(){
-    return load('/main.js');
+    return load('/assets/main.js');
   });
 
   function load(src) {

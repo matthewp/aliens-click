@@ -13,7 +13,8 @@
     "rollup-plugin-json": "^2.1.0",
     "rollup-plugin-node-resolve": "^2.0.0",
     "rollup-plugin-string": "^2.0.2",
-    "sw-precache": "^4.2.3"
+    "sw-precache": "^4.2.3",
+    "text-to-module": "^1.0.0"
   },
   "dependencies": {
     "@webcomponents/custom-elements": "^1.0.0-rc.3",
@@ -25,8 +26,5 @@
     "handlebars": "^4.0.6",
     "html-minifier": "^3.4.3",
     "node-fetch": "^1.6.3"
-  },
-  "engines": {
-    "node": "^7.2.1"
   }
 }

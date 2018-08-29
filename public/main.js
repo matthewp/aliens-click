@@ -1,120 +1,49 @@
 (function () {
 'use strict';
 
-class SwapShadow extends self.HTMLElement{connectedCallback(){this.swap();}swap(){var a=this.parentNode,b=[].slice.call(this.childNodes),c=this.ownerDocument.createDocumentFragment();for(var d=0,e=b.length;d<e;d++)c.appendChild(b[d]);var f=a.shadowRoot||a.attachShadow({mode:'open'});f.appendChild(c),a.removeChild(this);}}customElements.define('swap-shadow',SwapShadow);
+class SwapShadow extends self.HTMLElement {
+  connectedCallback() {
+    this.swap();
+  }
 
-const root = typeof window === 'undefined' ? global : window;
+  swap() {
+    var root = this.parentNode;
 
-const {
-  customElements: customElements$1,
-  HTMLElement = null,
-  Object: Object$1,
-  MutationObserver
-} = root;
-const {
-  getOwnPropertyNames,
-  getOwnPropertySymbols
-} = Object$1;
+    var childNodes = [].slice.call(this.childNodes);
 
-function dashCase(str) {
-  return str.split(/([_A-Z])/).reduce((one, two, idx) => {
-    const dash = !one || idx % 2 === 0 ? '' : '-';
-    two = two === '_' ? '' : two;
-    return `${ one }${ dash }${ two.toLowerCase() }`;
-  });
+    var frag = this.ownerDocument.createDocumentFragment();
+    for (var i = 0, len = childNodes.length; i < len; i++) {
+      frag.appendChild(childNodes[i]);
+    }
+    var shadow = root.shadowRoot || root.attachShadow({ mode: 'open' });
+    shadow.appendChild(frag);
+    root.removeChild(this);
+  }
 }
 
-function debounce(cbFunc) {
-  let scheduled = false;
-  let i = 0;
-  let cbArgs = [];
-  const elem = document.createElement('span');
-  const observer = new MutationObserver(() => {
-    cbFunc(...cbArgs);
-    scheduled = false;
-    cbArgs = null;
-  });
+customElements.define('swap-shadow', SwapShadow);
 
-  observer.observe(elem, { childList: true });
-
-  return (...args) => {
-    cbArgs = args;
-    if (!scheduled) {
-      scheduled = true;
-      elem.textContent = `${ i }`;
-      i += 1;
-    }
-  };
+function dashCase(str) {
+  return typeof str === 'string' ? str.split(/([_A-Z])/).reduce((one, two, idx) => {
+    const dash = !one || idx % 2 === 0 ? '' : '-';
+    two = two === '_' ? '' : two;
+    return `${one}${dash}${two.toLowerCase()}`;
+  }) : str;
 }
 
 const empty = val => val == null;
-const { freeze } = Object$1;
 
-function keys(obj = {}) {
-  const names = getOwnPropertyNames(obj);
-  return getOwnPropertySymbols ? names.concat(getOwnPropertySymbols(obj)) : names;
+function keys(obj) {
+  obj = obj || {};
+  const names = Object.getOwnPropertyNames(obj);
+  return Object.getOwnPropertySymbols ? names.concat(Object.getOwnPropertySymbols(obj)) : names;
 }
 
-function sym(description) {
-  return typeof Symbol === 'function' ? Symbol(description ? String(description) : undefined) : uniqueId(description);
-}
+var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
 
-function uniqueId(description) {
-  return (description ? String(description) : '') + 'xxxxxxxx'.replace(/[xy]/g, c => {
-    const r = Math.random() * 16 | 0;
-    const v = c === 'x' ? r : r & 0x3 | 0x8;
-    return v.toString(16);
-  });
-}
-
-var _extends$1 = Object.assign || function (target) {
-  for (var i = 1; i < arguments.length; i++) {
-    var source = arguments[i];for (var key in source) {
-      if (Object.prototype.hasOwnProperty.call(source, key)) {
-        target[key] = source[key];
-      }
-    }
-  }return target;
-};
-
-const _definedProps = sym('_definedProps');
-const _normPropDef = sym('_normPropDef');
-const _syncingAttributeToProperty = sym('_syncingAttributeToProperty');
-const _syncingPropertyToAttribute = sym('_syncingPropertyToAttribute');
-
-const _updateDebounced = sym('_updateDebounced');
-
-function defineProps(Ctor) {
-  if (Ctor[_definedProps]) {
-    return;
-  }
-  Ctor[_definedProps] = true;
-
-  const { prototype } = Ctor;
-  const props = normPropDefs(Ctor);
-
-  Object.defineProperties(prototype, keys(props).reduce((prev, curr) => {
-    const { attribute: { target }, coerce, default: def, serialize } = props[curr];
-    const _value = sym(curr);
-    prev[curr] = {
-      configurable: true,
-      get() {
-        const val = this[_value];
-        return val == null ? def : val;
-      },
-      set(val) {
-        this[_value] = coerce(val);
-        syncPropertyToAttribute(this, target, serialize, val);
-        this[_updateDebounced]();
-      }
-    };
-    return prev;
-  }, {}));
-}
-
-function normAttribute(name, prop) {
+function normaliseAttributeDefinition(name, prop) {
   const { attribute } = prop;
-  const obj = typeof attribute === 'object' ? _extends$1({}, attribute) : {
+  const obj = typeof attribute === 'object' ? _extends({}, attribute) : {
     source: attribute,
     target: attribute
   };
@@ -127,10 +56,10 @@ function normAttribute(name, prop) {
   return obj;
 }
 
-function normPropDef(name, prop) {
+function normalisePropertyDefinition(name, prop) {
   const { coerce, default: def, deserialize, serialize } = prop;
   return {
-    attribute: normAttribute(name, prop),
+    attribute: normaliseAttributeDefinition(name, prop),
     coerce: coerce || (v => v),
     default: def,
     deserialize: deserialize || (v => v),
@@ -138,80 +67,101 @@ function normPropDef(name, prop) {
   };
 }
 
-function normPropDefs(Ctor) {
-  return Ctor[_normPropDef] || (Ctor[_normPropDef] = keys(Ctor.props).reduce((prev, curr) => {
-    prev[curr] = normPropDef(curr, Ctor.props[curr] || {});
-    return prev;
-  }, {}));
+function defineProps(constructor) {
+  if (constructor.hasOwnProperty('_propsNormalised')) return;
+  const { props } = constructor;
+  keys(props).forEach(name => {
+    let func = props[name];
+    if (typeof func !== 'function') func = prop(func);
+    func({ constructor }, name);
+  });
 }
 
-function syncAttributeToProperty(elem, name, value) {
-  if (elem[_syncingPropertyToAttribute]) {
-    return;
+function delay(fn) {
+  if (window.Promise) {
+    Promise.resolve().then(fn);
+  } else {
+    setTimeout(fn);
   }
-  const propDefs = normPropDefs(elem.constructor);
-  for (let propName in propDefs) {
-    const { attribute: { source }, deserialize } = propDefs[propName];
-    if (source === name) {
-      elem[_syncingAttributeToProperty] = propName;
-      elem[propName] = value == null ? value : deserialize(value);
-      elem[_syncingAttributeToProperty] = null;
+}
+
+function prop(definition) {
+  const propertyDefinition = definition || {};
+
+  // Allows decorators, or imperative definitions.
+  const func = function ({ constructor }, name) {
+    const normalised = normalisePropertyDefinition(name, propertyDefinition);
+
+    // Ensure that we can cache properties. We have to do this so the _props object literal doesn't modify parent
+    // classes or share the instance anywhere where it's not intended to be shared explicitly in userland code.
+    if (!constructor.hasOwnProperty('_propsNormalised')) {
+      constructor._propsNormalised = {};
     }
-  }
-}
 
-function syncPropertyToAttribute(elem, target, serialize, val) {
-  if (target && elem[_syncingAttributeToProperty] !== target) {
-    const serialized = serialize(val);
-    elem[_syncingPropertyToAttribute] = true;
-    if (serialized == null) {
-      elem.removeAttribute(target);
-    } else {
-      elem.setAttribute(target, serialized);
-    }
-    elem[_syncingPropertyToAttribute] = false;
-  }
-}
+    // Cache the value so we can reference when syncing the attribute to the property.
+    constructor._propsNormalised[name] = normalised;
+    const { attribute: { source, target } } = normalised;
 
-var _extends = Object.assign || function (target) {
-  for (var i = 1; i < arguments.length; i++) {
-    var source = arguments[i];for (var key in source) {
-      if (Object.prototype.hasOwnProperty.call(source, key)) {
-        target[key] = source[key];
+    if (source) {
+      constructor._observedAttributes.push(source);
+      constructor._attributeToPropertyMap[source] = name;
+      if (source !== target) {
+        constructor._attributeToAttributeMap[source] = target;
       }
     }
-  }return target;
-};
 
-// Unfortunately the polyfills still seem to double up on lifecycle calls. In
-// order to get around this, we need guards to prevent us from executing them
-// more than once for a given state.
-const _connected = sym('_connected');
-const _constructed = sym('_constructed');
+    Object.defineProperty(constructor.prototype, name, {
+      configurable: true,
+      get() {
+        const val = this._props[name];
+        return val == null ? normalised.default : val;
+      },
+      set(val) {
+        const { attribute: { target }, serialize } = normalised;
+        if (target) {
+          const serializedVal = serialize ? serialize(val) : val;
+          if (serializedVal == null) {
+            this.removeAttribute(target);
+          } else {
+            this.setAttribute(target, serializedVal);
+          }
+        }
+        this._props[name] = normalised.coerce(val);
+        this.triggerUpdate();
+      }
+    });
+  };
 
-const _observedAttributes = sym('_observedAttributes');
-const _prevProps = sym('_prevProps');
-const _props = sym('_props');
-const _updateCallback = sym('_updateCallback');
-const _updating = sym('_updating');
+  // Allows easy extension of pre-defined props { ...prop(), ...{} }.
+  Object.keys(propertyDefinition).forEach(key => func[key] = propertyDefinition[key]);
 
-const withProps = (Base = HTMLElement) => {
-  return class extends Base {
-    static get observedAttributes() {
-      const props = normPropDefs(this);
-      return keys(props).map(k => props[k].attribute).filter(Boolean).map(a => a.source).concat(this[_observedAttributes] || []);
+  return func;
+}
+
+const withUpdate = (Base = HTMLElement) => {
+  var _class, _temp2;
+
+  return _temp2 = _class = class extends Base {
+    constructor(...args) {
+      var _temp;
+
+      return _temp = super(...args), this._prevProps = {}, this._prevState = {}, this._props = {}, this._state = {}, _temp;
     }
 
-    static set observedAttributes(attrs) {
-      this[_observedAttributes] = attrs;
+    static get observedAttributes() {
+      // We have to define props here because observedAttributes are retrieved
+      // only once when the custom element is defined. If we did this only in
+      // the constructor, then props would not link to attributes.
+      defineProps(this);
+      return this._observedAttributes;
     }
 
     static get props() {
-      return this[_props];
+      return this._props;
     }
 
     static set props(props) {
-      this[_props] = props;
+      this._props = props;
     }
 
     get props() {
@@ -226,163 +176,300 @@ const withProps = (Base = HTMLElement) => {
       keys(props).forEach(k => k in ctorProps && (this[k] = props[k]));
     }
 
-    constructor() {
-      super();
-
-      this[_updateCallback] = () => {
-        if (this[_updating] || !this[_connected]) {
-          return;
-        }
-
-        // Flag as rendering. This prevents anything from trying to render - or
-        // queueing a render - while there is a pending render.
-        this[_updating] = true;
-
-        // Prev / next props for prop lifecycle callbacks.
-        const prev = this[_prevProps];
-        const next = this[_prevProps] = this.props;
-
-        // Always call set, but only call changed if the props updated.
-        this.propsSetCallback(next, prev);
-        if (this.propsUpdatedCallback(next, prev)) {
-          this.propsChangedCallback(next, prev);
-        }
-
-        this[_updating] = false;
-      };
-
-      if (this[_constructed]) return;
-      this[_constructed] = true;
-      const { constructor } = this;
-      defineProps(constructor);
-      this[_updateDebounced] = debounce(this[_updateCallback]);
+    get state() {
+      return this._state;
     }
 
-    connectedCallback() {
-      if (this[_connected]) return;
-      this[_connected] = true;
-      if (super.connectedCallback) super.connectedCallback();
-      this[_updateDebounced]();
-    }
-
-    disconnectedCallback() {
-      if (!this[_connected]) return;
-      this[_connected] = false;
-      if (super.disconnectedCallback) super.disconnectedCallback();
-    }
-
-    // Called when props actually change.
-    propsChangedCallback() {}
-
-    // Called whenever props are set, even if they don't change.
-    propsSetCallback() {}
-
-    // Called to see if the props changed.
-    propsUpdatedCallback(next, prev) {
-      return !prev || keys(prev).some(k => prev[k] !== next[k]);
+    set state(state) {
+      this._state = state;
+      this.triggerUpdate();
     }
 
     attributeChangedCallback(name, oldValue, newValue) {
-      if (super.attributeChangedCallback) super.attributeChangedCallback(name, oldValue, newValue);
-      syncAttributeToProperty(this, name, newValue);
+      const {
+        _attributeToAttributeMap,
+        _attributeToPropertyMap,
+        props
+      } = this.constructor;
+
+      if (super.attributeChangedCallback) {
+        super.attributeChangedCallback(name, oldValue, newValue);
+      }
+
+      const propertyName = _attributeToPropertyMap[name];
+      if (propertyName) {
+        const propertyDefinition = props[propertyName];
+        if (propertyDefinition) {
+          const { default: defaultValue, deserialize } = propertyDefinition;
+          const propertyValue = deserialize ? deserialize(newValue) : newValue;
+          this._props[propertyName] = propertyValue == null ? defaultValue : propertyValue;
+        }
+      }
+
+      const targetAttributeName = _attributeToAttributeMap[name];
+      if (targetAttributeName) {
+        if (newValue == null) {
+          this.removeAttribute(targetAttributeName);
+        } else {
+          this.setAttribute(targetAttributeName, newValue);
+        }
+      }
     }
 
-    // Invokes the complete render lifecycle.
-  };
+    connectedCallback() {
+      if (super.connectedCallback) {
+        super.connectedCallback();
+      }
+      this.triggerUpdate();
+    }
+
+    shouldUpdate() {
+      return true;
+    }
+
+    triggerUpdate() {
+      if (this._updating) {
+        return;
+      }
+      this._updating = true;
+      delay(() => {
+        const { _prevProps, _prevState } = this;
+        if (this.updating) {
+          this.updating(_prevProps, _prevState);
+        }
+        if (this.updated && this.shouldUpdate(_prevProps, _prevState)) {
+          this.updated(_prevProps, _prevState);
+        }
+        this._prevProps = this.props;
+        this._prevState = this.state;
+        this._updating = false;
+      });
+    }
+  }, _class._attributeToAttributeMap = {}, _class._attributeToPropertyMap = {}, _class._observedAttributes = [], _class._props = {}, _temp2;
 };
 
-// Props
-
 const { parse, stringify } = JSON;
-const attribute = freeze({ source: true });
-const createProp = obj => freeze(_extends({ attribute }, obj));
-const nullOrType = type => val => empty(val) ? null : type(val);
+const attribute = Object.freeze({ source: true });
 const zeroOrNumber = val => empty(val) ? 0 : Number(val);
 
-const array = createProp({
+const any = prop({
+  attribute
+});
+
+const array = prop({
+  attribute,
   coerce: val => Array.isArray(val) ? val : empty(val) ? null : [val],
-  default: freeze([]),
+  default: Object.freeze([]),
   deserialize: parse,
   serialize: stringify
 });
 
-const boolean = createProp({
+const boolean = prop({
+  attribute,
   coerce: Boolean,
   default: false,
   deserialize: val => !empty(val),
   serialize: val => val ? '' : null
 });
 
-const number = createProp({
+const number = prop({
+  attribute,
   default: 0,
   coerce: zeroOrNumber,
   deserialize: zeroOrNumber,
-  serialize: nullOrType(Number)
+  serialize: val => empty(val) ? null : String(Number(val))
 });
 
-const object = createProp({
-  default: freeze({}),
+const object = prop({
+  attribute,
+  default: Object.freeze({}),
   deserialize: parse,
   serialize: stringify
 });
 
-const string = createProp({
+const string = prop({
+  attribute,
   default: '',
   coerce: String,
-  serialize: nullOrType(String)
+  serialize: val => empty(val) ? null : String(val)
 });
 
-const _shadowRoot = sym();
+const DEFINE = 'define';
+const TRIGGER = 'trigger';
+const RENDER = 'render';
+const EVENT = 'event';
+const STATE = 'state';
+const DESTROY = 'destroy';
+const RENDERED = 'rendered';
+const CLEANUP = 'cleanup';
 
-const attachShadowOptions = { mode: 'open' };
+let currentComponent;
 
-function attachShadow(elem) {
-  return elem.attachShadow ? elem.attachShadow(attachShadowOptions) : elem;
+function setComponent(component) {
+  let previousComponent = currentComponent;
+  setComponentTo(component);
+  return setComponentTo.bind(null, previousComponent);
 }
 
-const withRender = (Base = HTMLElement) => class extends Base {
-  get renderRoot() {
-    this[_shadowRoot] = this[_shadowRoot] || (this[_shadowRoot] = this.shadowRoot || attachShadow(this));
-    return this[_shadowRoot];
-  }
-
-  propsChangedCallback() {
-    this.rendererCallback(this.renderRoot, () => this.renderCallback(this));
-    this.renderedCallback();
-  }
-
-  // Called to render the component.
-  renderCallback() {}
-
-  // Called after the component has rendered.
-  renderedCallback() {}
-};
-
-let suffix = 0;
-
-function formatName(prefix, suffix) {
-  prefix = prefix || 'element';
-  return (prefix.indexOf('-') === -1 ? `x-${ prefix }` : prefix) + (suffix ? `-${ suffix }` : '');
+function setComponentTo(component) {
+  currentComponent = component;
 }
 
-function generateName(Ctor) {
-  const prefix = dashCase(Ctor.name);
-  while (customElements$1.get(formatName(prefix, suffix))) {
-    suffix++;
+/**
+ * The algorithm to determine when mounted is:
+ * 1. When a component is updated, it and parents are updating
+ * 2. When children have rendered, parent is done.
+ * 3. If no children, parent done after own render.
+ */
+
+function withMount(Base) {
+  return class extends Base {
+    constructor() {
+      super();
+      this._resetComponent = Function.prototype; // placeholder
+      this._parentComponent = currentComponent;
+      this._renderCount = 0;
+      this._hasChildComponents = false;
+      this._amMounted = false;
+    }
+
+    connectedCallback() {
+      if(super.connectedCallback) super.connectedCallback();
+      if(this._parentComponent) {
+        this._parentComponent._hasChildComponents = true;
+      }
+    }
+
+    disconnectedCallback() {
+      if(super.disconnectedCallback) super.disconnectedCallback();
+      this._amMounted = false;
+    }
+
+    renderer() {
+      if(super.renderer) super.renderer();
+      this._renderCount = 0;
+      if(this._parentComponent) {
+        this._parentComponent._incrementRender();
+      }
+    }
+
+    beforeRender() {
+      this._resetComponent = setComponent(this);
+    }
+
+    afterRender() {
+      this._resetComponent();
+      this._resetComponent = Function.prototype;
+
+      if(!this._amMounted && !this._hasChildComponents) {
+        this._checkIfRendered();
+      }
+    }
+
+    _incrementRender() {
+      this._renderCount++;
+    }
+
+    _decrementRender() {
+      this._renderCount--;
+      this._checkIfRendered();
+    }
+
+    _checkIfRendered() {
+      if(this._amMounted) return;
+
+      if(this._renderCount === 0) {
+        this._amMounted = true;
+        this._worker.postMessage({
+          type: RENDERED,
+          id: this._id
+        });
+
+        if(this._parentComponent) {
+          this._parentComponent._decrementRender();
+        }
+      }
+    }
   }
-  return formatName(prefix, suffix++);
 }
 
-const _is = sym('_is');
+function postEvent(event, inst, handle) {
+  let worker = inst._worker;
+  let id = inst._id;
+  worker.postMessage({
+    type: EVENT,
+    event: {
+      type: event.type,
+      detail: event.detail,
+      value: event.target.value
+    },
+    id: id,
+    handle: handle
+  });
+}
 
-const withUnique = (Base = HTMLElement) => class extends Base {
-  static get is() {
-    return this[_is] || (this[_is] = generateName(this));
+function withWorkerEvents(Base = HTMLElement) {
+  return class extends Base {
+    constructor() {
+      super();
+      this._handlers = Object.create(null);
+    }
+
+    addEventCallback(handleId, eventProp) {
+      var key = handleId;
+      var fn;
+      if(fn = this._handlers[key]) {
+        return fn;
+      }
+
+      // TODO optimize this so functions are reused if possible.
+      var self = this;
+      fn = function(ev){
+        ev.preventDefault();
+        postEvent(ev, self, handleId);
+      };
+      this._handlers[key] = fn;
+      return fn;
+    }
+
+    addEventProperty(name) {
+      var evName = name.substr(2);
+      var priv = '_' + name;
+      var proto = Object.getPrototypeOf(this);
+      Object.defineProperty(proto, name, {
+        get: function(){ return this[priv]; },
+        set: function(val) {
+          var cur;
+          if(cur = this[priv]) {
+            this.removeEventListener(evName, cur);
+          }
+          this[priv] = val;
+          this.addEventListener(evName, val);
+        }
+      });
+    }
+
+    handleEvent(ev) {
+      ev.preventDefault();
+      postEvent(ev, this);
+    }
+
+    handleOrphanedHandles(handles) {
+      if(handles.length) {
+        let worker = this._worker;
+        worker.postMessage({
+          type: CLEANUP,
+          id: this._id,
+          handles: handles
+        });
+        let handlers = this._handlers;
+        handles.forEach(function(id){
+          delete handlers[id];
+        });
+      }
+    }
   }
-  static set is(is) {
-    this[_is] = is;
-  }
-};
+}
 
 /**
  * @license
@@ -1569,22 +1656,97 @@ var patch = patchInner;
 var elementOpen_1 = elementOpen;
 var elementClose_1 = elementClose;
 var text_1 = text;
+var symbols_1 = symbols;
+var attributes_1 = attributes;
 
-function render$1(bc, component) {
+function getInstance(fritz, id){
+  return fritz._instances[id];
+}
+
+function setInstance(fritz, id, instance){
+  fritz._instances[id] = instance;
+}
+
+function delInstance(fritz, id){
+  delete fritz._instances[id];
+}
+
+function isFunction(val) {
+  return typeof val === 'function';
+}
+
+const defer = Promise.resolve().then.bind(Promise.resolve());
+
+const sym$1 = typeof Symbol === 'function' ? Symbol : function(v) { return '_' + v };
+
+var eventAttrExp = /^on[a-z]/;
+var orphanedHandles = null;
+var FN_HANDLE = sym$1('fritz.handle');
+
+var attributesSet = attributes_1[symbols_1.default];
+attributes_1[symbols_1.default] = preferProps;
+
+function preferProps(element, name, value){
+  if(name in element && !isSVG(element)) {
+    if(isEventProperty(name, value)) {
+      element[name] = setupEventHandler(element, name, value);
+    } else {
+      element[name] = value;
+    }
+  }
+
+  else if(isEventProperty(name, value) && isFunction(element.addEventProperty)) {
+    element.addEventProperty(name);
+    element[name] = setupEventHandler(element, name, value);
+  }
+  else
+    attributesSet(element, name, value);
+}
+
+function isEventProperty(name, value) {
+  return eventAttrExp.test(name) && Array.isArray(value) && isFunction(value[1]);
+}
+
+function isSVG(element) {
+  return element.namespaceURI === 'http://www.w3.org/2000/svg';
+}
+
+function setupEventHandler(element, name, value) {
+  var currentValue = element[name];
+  var fn = value[1];
+  if(currentValue) {
+    if(currentValue !== fn) {
+      fn[FN_HANDLE] = value[0];
+      orphanedHandles.push(currentValue[FN_HANDLE]);
+    }
+  } else {
+    fn[FN_HANDLE] = value[0];
+  }
+  return fn;
+}
+
+const TAG = 1;
+const ID = 2;
+const ATTRS = 3;
+const EVENTS = 4;
+
+function render$1(bc, component){
   var n;
-  for (var i = 0, len = bc.length; i < len; i++) {
+  for(var i = 0, len = bc.length; i < len; i++) {
     n = bc[i];
-    switch (n[0]) {
+    switch(n[0]) {
       // Open
       case 1:
-        if (n[3]) {
-          for (var j = 0, jlen = n[3].length; j < jlen; j++) {
-            let handler = component.addEventCallback(n[3][j][2]);
-            n[2].push(n[3][j][1], handler);
+        if(n[EVENTS]) {
+          var k;
+          for(var j = 0, jlen = n[EVENTS].length; j < jlen; j++) {
+            k = n[EVENTS][j];
+            let handler = component.addEventCallback(k[2], k[1]);
+            n[ATTRS].push(k[1], [k[2], handler]);
           }
         }
 
-        var openArgs = [n[1], null, null].concat(n[2]);
+        var openArgs = [n[TAG], n[ID], null].concat(n[ATTRS]);
         elementOpen_1.apply(null, openArgs);
         break;
       case 2:
@@ -1598,134 +1760,158 @@ function render$1(bc, component) {
 }
 
 function idomRender(vdom, root, component) {
+  orphanedHandles = [];
   patch(root, () => render$1(vdom, component));
+  let out = orphanedHandles;
+  orphanedHandles = null;
+  return out;
 }
 
-const DEFINE = 'define';
-const TRIGGER = 'trigger';
-const RENDER = 'render';
-const EVENT = 'event';
-const STATE = 'state';
-const DESTROY = 'destroy';
-
-function postEvent(event, inst, handle) {
-  let worker = inst._worker;
-  let id = inst._id;
-  worker.postMessage({
-    type: EVENT,
-    name: event.type,
-    id: id,
-    handle: handle,
-    value: event.target.value
-  });
+function shadow(elem) {
+  return elem._shadowRoot || (elem._shadowRoot = elem.shadowRoot || elem.attachShadow({ mode: 'open' }));
 }
 
-const withComponent = (Base = HTMLElement) => class extends withUnique(withRender(withProps(Base))) {
-  rendererCallback(shadowRoot, renderCallback) {
-    this._worker.postMessage({
-      type: RENDER,
-      tag: this.localName,
-      id: this._id,
-      props: this.props
-    });
-  }
+const withRenderer = (Base = HTMLElement) => {
+  return class extends Base {
 
-  doRenderCallback(vdom) {
-    let shadowRoot = this.shadowRoot;
-    idomRender(vdom, shadowRoot, this);
-  }
+    get renderRoot() {
+      return super.renderRoot || shadow(this);
+    }
 
-  observedEventsCallback(events) {
-    events.forEach(eventName => {
-      this.shadowRoot.addEventListener(eventName, this);
-    });
-  }
+    renderer(root, html) {
+      if (super.renderer) {
+        super.renderer(root, html);
+      } else {
+        root.innerHTML = html() || '';
+      }
+    }
 
-  addEventCallback(handleId) {
-    var self = this;
-    return function (ev) {
-      ev.preventDefault();
-      postEvent(ev, self, handleId);
-    };
-  }
-
-  handleEvent(ev) {
-    ev.preventDefault();
-    postEvent(ev, this);
-  }
+    updated(...args) {
+      super.updated && super.updated(...args);
+      this.rendering && this.rendering();
+      this.renderer(this.renderRoot, () => this.render && this.render(this));
+      this.rendered && this.rendered();
+    }
+  };
 };
 
-const Component = withComponent();
+function withWorkerRender(Base = HTMLElement) {
+  return class extends withRenderer(Base) {
+    constructor() {
+      super();
+      if(!this.shadowRoot) {
+        this.attachShadow({ mode: 'open' });
+      }
+    }
 
-function getInstance(fritz, id) {
-  return fritz._instances[id];
+    renderer() {
+      this._worker.postMessage({
+        type: RENDER,
+        tag: this.localName,
+        id: this._id,
+        props: this.props
+      });
+    }
+
+    beforeRender() {}
+    afterRender() {}
+
+    doRenderCallback(vdom) {
+      this.beforeRender();
+      let shadowRoot = this.shadowRoot;
+      let out = idomRender(vdom, shadowRoot, this);
+      this.afterRender();
+      this.handleOrphanedHandles(out);
+    }
+  }
 }
 
-function setInstance(fritz, id, instance) {
-  fritz._instances[id] = instance;
+function withComponent(options) {
+  let Base = withWorkerRender(withUpdate(HTMLElement));
+
+  Base = withWorkerEvents(Base);
+
+  if(options.mount) {
+    Base = withMount(Base);
+  }
+
+  return Base;
 }
 
-function delInstance(fritz, id) {
-  delete fritz._instances[id];
-}
-
-function define(fritz, msg) {
-  let worker = this;
-  let tagName = msg.tag;
-  let props = msg.props || {};
-
-  class OffThreadElement extends Component {
+function withWorkerConnection(fritz, events, props, worker, Base) {
+  return class extends Base {
     static get props() {
       return props;
     }
 
     constructor() {
       super();
-      this._worker = worker;
       this._id = ++fritz._id;
+      this._worker = worker;
     }
 
     connectedCallback() {
       super.connectedCallback();
       setInstance(fritz, this._id, this);
+      events.forEach(eventName => {
+        this.shadowRoot.addEventListener(eventName, this);
+      });
     }
 
     disconnectedCallback() {
-      super.disconnectedCallback();
+      if(super.disconnectedCallback) super.disconnectedCallback();
       delInstance(fritz, this._id);
+      events.forEach(eventName => {
+        this.shadowRoot.removeEventListener(eventName, this);
+      });
       this._worker.postMessage({
         type: DESTROY,
         id: this._id
       });
     }
   }
+}
 
-  customElements.define(tagName, OffThreadElement);
+function define(fritz, msg) {
+  let worker = this;
+  let tagName = msg.tag;
+  let props = msg.props || {};
+  let events = msg.events || [];
+  let features = msg.features;
+
+  let Element = withWorkerConnection(
+    fritz, events, props, worker,
+    withComponent(features)
+  );
+
+  customElements.define(tagName, Element);
 }
 
 function render(fritz, msg) {
-  let id = msg.id;
   let instance = getInstance(fritz, msg.id);
-  if (instance !== undefined) {
+  if(instance !== undefined) {
     instance.doRenderCallback(msg.tree);
-    if (msg.events) {
-      instance.observedEventsCallback(msg.events);
-    }
   }
 }
 
 function trigger(fritz, msg) {
   let inst = getInstance(fritz, msg.id);
-  let event = new Event(msg.event.type, {
-    bubbles: true
+  let ev = msg.event;
+  let event = new CustomEvent(ev.type, {
+    bubbles: true,//ev.bubbles,
+    cancelable: ev.cancelable,
+    detail: ev.detail,
+    scoped: ev.scoped,
+    composed: ev.composed
   });
+
   inst.dispatchEvent(event);
 }
 
 function sendState(fritz, worker) {
   let workers = worker ? [worker] : fritz._workers;
   let state = fritz.state;
-  workers.forEach(function (worker) {
+  workers.forEach(function(worker){
     worker.postMessage({
       type: STATE,
       state: state
@@ -1738,18 +1924,19 @@ fritz.tags = Object.create(null);
 fritz._id = 1;
 fritz._instances = Object.create(null);
 fritz._workers = [];
+fritz._work = [];
 
 function use(worker) {
   fritz._workers.push(worker);
   worker.addEventListener('message', handleMessage);
-  if (fritz.state) {
+  if(fritz.state) {
     sendState(fritz, worker);
   }
 }
 
 function handleMessage(ev) {
   let msg = ev.data;
-  switch (msg.type) {
+  switch(msg.type) {
     case DEFINE:
       define.call(this, fritz, msg);
       break;
@@ -1764,17 +1951,59 @@ function handleMessage(ev) {
 fritz.use = use;
 
 Object.defineProperty(fritz, 'state', {
-  set: function (val) {
+  set: function(val){
     this._state = val;
     sendState(fritz);
   },
-  get: function () {
+  get: function(){
     return this._state;
   }
 });
 
-var Router = class{constructor(){this.pageSelect=document.querySelector('page-select');var a=document.body;a.addEventListener('click',this);}handleEvent(a){var b=a.composedPath();for(var c=0,d=b.length;c<d;c++){let e=b[c];'a'===e.localName&&(/article\//.test(e.pathname)?(a.preventDefault(),this.goToArticle(e.pathname)):'/'===e.pathname&&(a.preventDefault(),this.goToIndex()));}}goToArticle(a){let b=+a.split('/').pop();this.pageSelect.page='article',this.pageSelect.articleId=b,history.pushState(null,'Article',a);}goToIndex(){this.pageSelect.page='index',history.pushState(null,'Aliens app!','/');}};
+var Router = class {
+  constructor() {
+    this.pageSelect = document.querySelector('page-select');
 
-fritz.use(new Worker('/app.js'));const state=document.getElementById('state-from-server').dataset.state;state&&(fritz.state=JSON.parse(state)),new Router;
+    var root = document.body;
+    root.addEventListener('click', this);
+  }
+
+  handleEvent(ev) {
+    var paths = ev.composedPath();
+    for (var i = 0, len = paths.length; i < len; i++) {
+      let el = paths[i];
+      if (el.localName === 'a') {
+        if (/article\//.test(el.pathname)) {
+          ev.preventDefault();
+          this.goToArticle(el.pathname);
+        } else if (el.pathname === '/') {
+          ev.preventDefault();
+          this.goToIndex();
+        }
+      }
+    }
+  }
+
+  goToArticle(pth) {
+    let id = Number(pth.split("/").pop());
+    this.pageSelect.page = 'article';
+    this.pageSelect.articleId = id;
+    history.pushState(null, 'Article', pth);
+  }
+
+  goToIndex() {
+    this.pageSelect.page = 'index';
+    history.pushState(null, 'Aliens app!', '/');
+  }
+};
+
+fritz.use(new Worker('/assets/app.js'));
+
+const state = document.getElementById('state-from-server').dataset.state;
+if (state) {
+  fritz.state = JSON.parse(unescape(state));
+}
+
+new Router();
 
 }());

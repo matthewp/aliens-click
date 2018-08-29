@@ -659,8 +659,8 @@ fresh@0.3.0:
   resolved "https://registry.yarnpkg.com/fresh/-/fresh-0.3.0.tgz#651f838e22424e7566de161d8358caa199f83d4f"
 
 fritz@^3.0.0-alpha.0:
-  version "3.0.0-alpha.0"
-  resolved "https://registry.yarnpkg.com/fritz/-/fritz-3.0.0-alpha.0.tgz#7c0ace6da43ad6a82799e225d4dadba3c3720c80"
+  version "3.2.0"
+  resolved "https://registry.yarnpkg.com/fritz/-/fritz-3.2.0.tgz#3bee9f595589ab9483c0afc24b5342c11d4a4792"
 
 fs.realpath@^1.0.0:
   version "1.0.0"
@@ -1332,6 +1332,10 @@ sw-toolbox@^3.4.0:
   dependencies:
     path-to-regexp "^1.0.1"
     serviceworker-cache-polyfill "^4.0.0"
+
+text-to-module@^1.0.0:
+  version "1.0.1"
+  resolved "https://registry.yarnpkg.com/text-to-module/-/text-to-module-1.0.1.tgz#dfe71db5e5b38497ebea8929a84522d55b4b4303"
 
 to-fast-properties@^1.0.1:
   version "1.0.2"
