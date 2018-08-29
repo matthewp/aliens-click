@@ -10,35 +10,24 @@ class ArticlePage extends Component {
       article: { attribute: true }
     };
   }
-  
-  constructor() {
-    super();
-    this.data = fritz.state;
-    fritz.state = null;
-  }
 
   get article() {
     return this._article;
   }
 
-  set article(val) {
-    this._article = Number(val);
-  }
-
   loadArticle() {
-    const id = this.article;
+    const id = Number(this.props.article);
     if(isNaN(id)) {
       return;
     }
 
     api.article(id).then(data => {
-      this.data = data;
-      this.update();
+      this.setState({data})
     });
   }
 
-  render() {
-    if(!this.data) {
+  render({}, {data}) {
+    if(!data) {
       this.loadArticle();
     }
 
@@ -46,8 +35,8 @@ class ArticlePage extends Component {
       <section>
         <style>{styles}</style>
         {
-          this.data ? 
-          <SpeciesArticle data={this.data} /> :
+          data ? 
+          <SpeciesArticle data={data} /> :
           <Loading></Loading>
         }
       </section>

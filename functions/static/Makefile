@@ -12,5 +12,5 @@ clean:
 .PHONY: clean
 
 deploy: main.zip
-	aws lambda update-function-code --function-name aliens_list-aliens --zip-file fileb://./$^
+	aws lambda update-function-code --function-name aliens_static --zip-file fileb://./$^
 .PHONY: deploy

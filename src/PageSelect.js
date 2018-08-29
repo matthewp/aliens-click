@@ -8,14 +8,12 @@ class PageSelect extends Component {
     };
   }
 
-  render() {
-    let page = this.page || 'index';
-
+  render({page = 'index', articleId}) {
     if(page === 'index') {
       return <index-page></index-page>;
     }
 
-    return <article-page article={this.articleId}></article-page>
+    return <article-page article={articleId}></article-page>
   }
 }
 

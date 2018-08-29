@@ -1999,11 +1999,6 @@ var Router = class {
 
 fritz.use(new Worker('/assets/app.js'));
 
-const state = document.getElementById('state-from-server').dataset.state;
-if (state) {
-  fritz.state = JSON.parse(unescape(state));
-}
-
 new Router();
 
 }());

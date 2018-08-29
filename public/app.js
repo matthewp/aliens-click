@@ -527,14 +527,12 @@ class PageSelect extends Component {
     };
   }
 
-  render() {
-    let page = this.page || 'index';
-
+  render({ page = 'index', articleId }) {
     if (page === 'index') {
       return h('index-page', null);
     }
 
-    return h('article-page', { article: this.articleId });
+    return h('article-page', { article: articleId });
   }
 }
 
@@ -650,34 +648,23 @@ class ArticlePage extends Component {
     };
   }
 
-  constructor() {
-    super();
-    this.data = fritz.state;
-    fritz.state = null;
-  }
-
   get article() {
     return this._article;
   }
 
-  set article(val) {
-    this._article = Number(val);
-  }
-
   loadArticle() {
-    const id = this.article;
+    const id = Number(this.props.article);
     if (isNaN(id)) {
       return;
     }
 
     article(id).then(data => {
-      this.data = data;
-      this.update();
+      this.setState({ data });
     });
   }
 
-  render() {
-    if (!this.data) {
+  render({}, { data }) {
+    if (!data) {
       this.loadArticle();
     }
 
@@ -689,7 +676,7 @@ class ArticlePage extends Component {
         null,
         styles$1
       ),
-      this.data ? h(article$1, { data: this.data }) : h(Loading, null)
+      data ? h(article$1, { data: data }) : h(Loading, null)
     );
   }
 }
