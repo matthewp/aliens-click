@@ -1,6 +1,8 @@
 
-exports.handle = async function() {
-  let html = template();
+exports.handle = async function(e) {
+  let { id } = e.pathParameters || {};
+
+  let html = template(id);
 
   let response = {
     isBase64Encoded: false,
@@ -15,18 +17,25 @@ exports.handle = async function() {
   return response;
 };
 
-function template() {
+function template(articleId) {
+  let page = articleId == null ? 'index' : 'article';
+  let pageSelectAttrs = `page="${page}"`;
+
+  if(page === 'article') {
+    pageSelectAttrs += ` article-id="${articleId}"`;
+  }
+
   return `
     <!doctype html>
     <html lang="en">
     <title>Aliens app!</title>
-    <link rel="stylesheet" href="/assets/styles.css"/>
-    <link rel="manifest" href="/assets/manifest.json"/>
-    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <link rel="stylesheet" href="/assets/styles.css">
+    <link rel="manifest" href="/assets/manifest.json">
+    <link rel="icon" href="/assets/favicon.ico" type="image/x-icon">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <script src="/assets/main.js" defer></script>
-    <link rel="preload" href="/assets/app.js" as="worker" />
-    <link rel="preload" href="/service-worker-registration.js" as="script" />
-    <link rel="shortcut icon" href="/favicon.ico"/>
+    <link rel="preload" href="/assets/app.js" as="worker">
+    <link rel="preload" href="/service-worker-registration.js" as="script">
     <header>
       <a class="home-button" href="/">
         <svg class="home-icon" version="1.0" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300.000000 300.000000" preserveAspectRatio="xMidYMid meet">
@@ -39,9 +48,7 @@ function template() {
       </a>
     </header>
     <main>
-      <page-select page="index">
-        <index-page></index-page>
-      </page-select>
+      <page-select ${pageSelectAttrs}></page-select>
     </main>
     <footer>
       <p>Content courtesy of the <a href="http://avp.wikia.com/wiki/Main_Page">Xenopedia</a>, and licensed under the <a href="http://www.wikia.com/Licensing">CC-BY-SA</a>.</p>

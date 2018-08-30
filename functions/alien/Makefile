@@ -1,4 +1,4 @@
-COMPILE=node_modules/.bin/compile
+COMPILE=../../node_modules/.bin/compile
 
 main.js:
 	$(COMPILE) --format cjs src/index.js
@@ -12,5 +12,5 @@ clean:
 .PHONY: clean
 
 deploy: main.zip
-	aws lambda update-function-code --function-name aliens_index --zip-file fileb://./$^
+	aws lambda update-function-code --function-name aliens_alien --zip-file fileb://./$^
 .PHONY: deploy
