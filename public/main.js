@@ -1966,9 +1966,21 @@ var Router = class {
 
     var root = document.body;
     root.addEventListener('click', this);
+    window.addEventListener('popstate', this);
+    this.originalState = {
+      page: 'index'
+    };
   }
 
   handleEvent(ev) {
+    if (ev.type === 'click') {
+      this.handleClick(ev);
+    } else if (ev.type === 'popstate') {
+      this.handlePopState(ev);
+    }
+  }
+
+  handleClick(ev) {
     var paths = ev.composedPath();
     for (var i = 0, len = paths.length; i < len; i++) {
       let el = paths[i];
@@ -1984,16 +1996,34 @@ var Router = class {
     }
   }
 
+  handlePopState(ev) {
+    let state = ev.state || this.originalState;
+    if (state.page === 'index') {
+      this.showIndex();
+    } else if (state.page === 'article') {
+      this.showArticle(state.id);
+    }
+  }
+
   goToArticle(pth) {
     let id = Number(pth.split("/").pop());
+    this.showArticle(id);
+    let state = { page: 'article', id };
+    history.pushState(state, 'Article', pth);
+  }
+
+  showArticle(id) {
     this.pageSelect.page = 'article';
     this.pageSelect.articleId = id;
-    history.pushState(null, 'Article', pth);
   }
 
   goToIndex() {
+    this.showIndex();
+    history.pushState({ page: 'index' }, 'Aliens app!', '/');
+  }
+
+  showIndex() {
     this.pageSelect.page = 'index';
-    history.pushState(null, 'Aliens app!', '/');
   }
 };
 
