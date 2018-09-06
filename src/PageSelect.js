@@ -1,6 +1,10 @@
 import fritz, { h, Component } from 'fritz';
 
 class PageSelect extends Component {
+  constructor() {
+    super();
+  }
+
   static get props() {
     return {
       page: { attribute: true },

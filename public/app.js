@@ -519,7 +519,27 @@ function article(id) {
   return fetch(`/api/article/${ id }?width=300`).then(res => res.json());
 }
 
+function onMatchingUpdate(exp, callback) {
+  let handler = event => {
+    if (event.data.type === 'data-update') {
+      if (exp.test(event.data.path)) {
+        callback(event.data.data);
+      }
+    }
+  };
+
+  self.addEventListener('message', handler);
+
+  return () => {
+    self.removeEventListener('message', handler);
+  };
+}
+
 class PageSelect extends Component {
+  constructor() {
+    super();
+  }
+
   static get props() {
     return {
       page: { attribute: true },
@@ -642,14 +662,22 @@ function list$1(content) {
 var styles$1 = ".loading {\n  display: flex;\n  justify-content: center;\n}\n\n.loading svg {\n  height: 150px;\n  width: 150px;\n}\n\n.species-article header h1 {\n  font-size: 2.5em;\n}\n\n.species-article figure {\n  float: right;\n}\n\n.species-article p {\n  line-height: 23px;\n}";
 
 class ArticlePage extends Component {
+  constructor() {
+    super();
+
+    this.unregisterUpdate = onMatchingUpdate(/\/api\/article/, data => {
+      this.setState({ data });
+    });
+  }
+
   static get props() {
     return {
       article: { attribute: true }
     };
   }
 
-  get article() {
-    return this._article;
+  componentWillUnmount() {
+    this.unregisterUpdate();
   }
 
   loadArticle() {
@@ -686,28 +714,32 @@ fritz.define('article-page', ArticlePage);
 class IndexPage extends Component {
   constructor() {
     super();
-    this.filter = '';
-    this.species = [];
 
-    if (fritz.state) {
-      this.filter = fritz.state.filter;
-      this.species = fritz.state.species;
-      fritz.state = null;
-    } else {
-      list().then(species => {
-        this.species = species;
-        this.update();
-      });
-    }
+    this.state = {
+      filter: '',
+      species: []
+    };
+
+    this.unregisterUpdate = onMatchingUpdate(/\/api\/aliens/, data => {
+      this.setState({ species: data });
+    });
+
+    list().then(species => {
+      this.setState({ species });
+    });
+  }
+
+  componentWillUnmount() {
+    this.unregisterUpdate();
   }
 
   keyup(ev) {
-    this.filter = ev.value;
+    this.setState({ filter: ev.value });
   }
 
-  render() {
-    return h(SpeciesList, { species: this.species, keyup: this.keyup,
-      filter: this.filter });
+  render({}, { species, filter }) {
+    return h(SpeciesList, { species: species, keyup: this.keyup,
+      filter: filter });
   }
 }
 

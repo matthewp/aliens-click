@@ -8,7 +8,6 @@ deploy-s3:
 	aws s3 sync public s3://static.aliens.click
 .PHONY: deploy-s3
 
-
 app:
 	./node_modules/.bin/rollup -c rollup.config.js -o ./public/app.js src/IndexPage.js
 

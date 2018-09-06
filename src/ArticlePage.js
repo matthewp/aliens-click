@@ -3,16 +3,25 @@ import fritz, { h, Component } from 'fritz';
 import Loading from './Loading.js';
 import SpeciesArticle from './SpeciesArticle.js';
 import styles from './ArticlePage.css';
+import { onMatchingUpdate } from './DataUpdate.js';
 
 class ArticlePage extends Component {
+  constructor() {
+    super();
+
+    this.unregisterUpdate = onMatchingUpdate(/\/api\/article/, data => {
+      this.setState({ data });
+    });
+  }
+
   static get props() {
     return {
       article: { attribute: true }
     };
   }
-
-  get article() {
-    return this._article;
+  
+  componentWillUnmount() {
+    this.unregisterUpdate();
   }
 
   loadArticle() {

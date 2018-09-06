@@ -35,7 +35,7 @@ function template(articleId) {
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <script src="/assets/main.js" defer></script>
     <link rel="preload" href="/assets/app.js" as="worker">
-    <link rel="preload" href="/service-worker-registration.js" as="script">
+    <script src="/service-worker-registration.js" async></script>
     <header>
       <a class="home-button" href="/">
         <svg class="home-icon" version="1.0" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300.000000 300.000000" preserveAspectRatio="xMidYMid meet">
