@@ -1,4 +1,4 @@
-import fritz, { h, Component } from 'fritz';
+import fritz, { html, Component } from 'fritz';
 
 class PageSelect extends Component {
   constructor() {
@@ -14,10 +14,10 @@ class PageSelect extends Component {
 
   render({page = 'index', articleId}) {
     if(page === 'index') {
-      return <index-page></index-page>;
+      return html`<index-page></index-page>`;
     }
 
-    return <article-page article={articleId}></article-page>
+    return html`<article-page article=${articleId}></article-page>`;
   }
 }
 

@@ -1,4 +1,4 @@
-import fritz, { h, Component } from 'fritz';
+import fritz, { Component } from 'fritz';
 import SpeciesList from './SpeciesList.js';
 import { list as aliensList } from './api.js';
 import { onMatchingUpdate } from './DataUpdate.js';
@@ -32,8 +32,10 @@ class IndexPage extends Component {
   }
 
   render({}, {species, filter}) {
-    return <SpeciesList species={species} keyup={this.keyup}
-      filter={filter}></SpeciesList>
+    return SpeciesList({
+      species, filter,
+      keyup: this.keyup
+    });
   }
 }
 

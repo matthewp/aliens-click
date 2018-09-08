@@ -1,5 +1,5 @@
 import * as api from './api.js';
-import fritz, { h, Component } from 'fritz';
+import fritz, { html, Component } from 'fritz';
 import Loading from './Loading.js';
 import SpeciesArticle from './SpeciesArticle.js';
 import styles from './ArticlePage.css';
@@ -40,16 +40,16 @@ class ArticlePage extends Component {
       this.loadArticle();
     }
 
-    return (
+    return html`
       <section>
-        <style>{styles}</style>
-        {
-          data ? 
-          <SpeciesArticle data={data} /> :
-          <Loading></Loading>
+        <style>${styles}</style>
+        ${
+          data ?
+            SpeciesArticle({data}) :
+            Loading()
         }
       </section>
-    );
+    `;
   }
 }
 

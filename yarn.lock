@@ -796,9 +796,9 @@ fresh@0.3.0:
   version "0.3.0"
   resolved "https://registry.yarnpkg.com/fresh/-/fresh-0.3.0.tgz#651f838e22424e7566de161d8358caa199f83d4f"
 
-fritz@^3.0.0-alpha.0:
-  version "3.2.0"
-  resolved "https://registry.yarnpkg.com/fritz/-/fritz-3.2.0.tgz#3bee9f595589ab9483c0afc24b5342c11d4a4792"
+fritz@^4.0.1:
+  version "4.0.1"
+  resolved "https://registry.yarnpkg.com/fritz/-/fritz-4.0.1.tgz#3a6adbe385a1bec78f1c530d3770f089d51d7f89"
 
 fs.realpath@^1.0.0:
   version "1.0.0"

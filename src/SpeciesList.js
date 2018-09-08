@@ -1,4 +1,4 @@
-import { h } from 'fritz';
+import { html } from 'fritz';
 import { thumbnail } from './utils.js';
 import styles from './SpeciesList.css';
 
@@ -6,37 +6,38 @@ function Specie({specie}) {
   let url = `/article/${specie.id}`;
   let tn = thumbnail(specie);
 
-  return (
+  return html`
     <li class="specie">
-      <a href={url}>
+      <a href=${url}>
         <figure>
-          { tn ? <img src={tn} /> : '' }
+          ${ tn ? html`<img src=${tn} />` : '' }
         </figure>
-        <span class="specie-title">{specie.title}</span>
+        <span class="specie-title">${specie.title}</span>
       </a>
     </li>
-  );
+  `;
 }
 
-export default function({ filter, species, keyup }, children) {
+export default function({ filter, species, keyup }) {
   let items = filter ? filterSpecies(species, filter) : species;
 
-  return (
+  return html`
     <div>
-      <style>{styles}</style>
+      <style>${styles}</style>
       <h1>Aliens</h1>
 
       <form action="/search">
-        <input onKeyup={keyup} type="text" value={ filter ? filter : '' }
+        <input onKeyup=${keyup} type="text" value=${ filter ? filter : '' }
           name="q" placeholder="Search species" class="alien-search" />
       </form>
       <ul class="species">
-        {items.map(specie => {
-          return <Specie specie={specie}/>
+        ${items.map(specie => {
+          return html`testing`
+          //return Specie({specie});
         })}
       </ul>
     </div>
-  );
+  `;
 }
 
 function filterSpecies(species, query){

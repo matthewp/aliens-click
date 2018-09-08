@@ -1,7 +1,7 @@
-import { h } from 'fritz';
+import { html } from 'fritz';
 
 export default function() {
-  return (
+  return html`
     <div class="loading">
       <svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" x="0px" y="0px" width="24px" height="30px" viewBox="0 0 24 30" style="enable-background:new 0 0 50 50;" >
         <rect x="0" y="0" width="4" height="10" fill="#E5FCF5" transform="translate(0 17.7778)">
@@ -15,5 +15,5 @@ export default function() {
         </rect>
       </svg>
     </div>
-  );
+  `;
 };

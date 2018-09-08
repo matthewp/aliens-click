@@ -19,8 +19,6 @@ function isFunction(val) {
 
 const defer = Promise.resolve().then.bind(Promise.resolve());
 
-const sym = typeof Symbol === 'function' ? Symbol : function(v) { return '_' + v };
-
 const DEFINE = 'define';
 const TRIGGER = 'trigger';
 const RENDER = 'render';
@@ -29,6 +27,7 @@ const STATE = 'state';
 const DESTROY = 'destroy';
 const RENDERED = 'rendered';
 const CLEANUP = 'cleanup';
+const REGISTER = 'register';
 
 let currentInstance = null;
 
@@ -169,116 +168,70 @@ Handle = class {
 
 var Handle$1 = Handle;
 
-const eventAttrExp = /^on[A-Z]/;
+const templateTag = 0;
+const valueTag = 1;
 
-function signal(tagName, attrName, attrValue, attrs) {
-  if(eventAttrExp.test(attrName)) {
-    let eventName = attrName.toLowerCase();
-    let handle = Handle$1.from(attrValue);
-    handle.inUse = true;
-    currentInstance._fritzHandles.set(handle.id, handle);
-    return [1, eventName, handle.id];
-  }
-}
+const templates = new WeakMap();
+const _template = Symbol();
+let globalId = 0;
 
-const _tree = sym('ftree');
 
-function isTree(obj) {
-  return !!(obj && obj[_tree]);
-}
-
-function createTree() {
-  var out = [];
-  out[_tree] = true;
-  return out;
-}
-
-function Fragment(attrs, children) {
-  var child;
-  var tree = createTree();
-  for(var i = 0; i < children.length; i++) {
-    child = children[i];
-    tree.push.apply(tree, child);
-  }
-  return tree;
-}
-
-function h(tag, attrs, children){
-  var argsLen = arguments.length;
-  var childrenType = typeof children;
-  if(argsLen === 2) {
-    if(typeof attrs !== 'object' || Array.isArray(attrs)) {
-      children = attrs;
-      attrs = null;
-    }
-  } else if(argsLen > 3 || isTree(children) || isPrimitive(childrenType)) {
-    children = Array.prototype.slice.call(arguments, 2);
+var html = function(strings, ...args) {
+  let id;
+  if(templates.has(strings)) {
+    id = templates.get(strings);
+  } else {
+    globalId = globalId + 1;
+    id = globalId;
+    templates.set(strings, id);
+    register(id, strings);
   }
 
-  var isFn = isFunction(tag);
-
-  if(isFn) {
-    var localName = tag.prototype.localName;
-    if(localName) {
-      return h(localName, attrs, children);
-    }
-
-    return tag(attrs || {}, children);
-  }
-
-  var tree = createTree();
-  var uniq;
-  if(attrs) {
-    var evs;
-    attrs = Object.keys(attrs).reduce(function(acc, key){
-      var value = attrs[key];
-
-      var eventInfo = signal(tag, key, value, attrs);
-      if(eventInfo) {
-        if(!evs) evs = [];
-        evs.push(eventInfo);
-      } else if(key === 'key') {
-        uniq = value;
+  // Set values
+  let vals = args.map(arg => {
+    let type = typeof arg;
+    if(type === 'function') {
+      let handle = Handle$1.from(arg);
+      handle.inUse = true;
+      currentInstance._fritzHandles.set(handle.id, handle);
+      return Uint8Array.from([0, handle.id]);
+    } else if (Array.isArray(arg)) {
+      let tag, values = arg;
+      if(isTemplate(arg)) {
+        tag = templateTag;
       } else {
-        acc.push(key);
-        acc.push(value);
+        tag = valueTag;
+
+        values = arg.map(item => {
+          if(isTemplate(item)) {
+            return [templateTag, item];
+          }
+          return item;
+        });
       }
+      return [tag, values];
+    }
+    return arg;
+  });
 
-      return acc;
-    }, []);
-  }
+  return mark([1, id, 2, vals]);
+};
 
-  var open = [1, tag, uniq];
-  if(attrs) {
-    open.push(attrs);
-  }
-  if(evs) {
-    open.push(evs);
-  }
-  tree.push(open);
-
-  if(children) {
-    children.forEach(function(child){
-      if(typeof child !== 'undefined' && !Array.isArray(child)) {
-        tree.push([4, child + '']);
-        return;
-      }
-
-      while(child && child.length) {
-        tree.push(child.shift());
-      }
-    });
-  }
-
-  tree.push([2, tag]);
-
-  return tree;
+function register(id, template) {
+  postMessage({
+    type: REGISTER,
+    id,
+    template
+  });
 }
 
-h.frag = Fragment;
+function mark(template) {
+  template[_template] = true;
+  return template;
+}
 
-function isPrimitive(type) {
-  return type === 'string' || type === 'number' || type === 'boolean';
+function isTemplate(template) {
+  return !!template[_template];
 }
 
 function render$1(fritz, msg) {
@@ -392,7 +345,7 @@ function relay(fritz) {
 const fritz = Object.create(null);
 fritz.Component = Component;
 fritz.define = define;
-fritz.h = h;
+fritz.html = html;
 fritz._tags = Object.create(null);
 fritz._instances = Object.create(null);
 
@@ -448,60 +401,26 @@ function thumbnail(item, width, height) {
 
 var styles = ".alien-search {\n  background: var(--alt-bg-color, #0B0014);\n  color: var(--fg-color, #F5E9E2);\n  border: none;\n  line-height: 1.5em;\n  padding: .5em;\n  outline: none;\n  font-size: 1.2em;\n  width: 100%;\n}\n\n.species {\n  list-style-type: none;\n  padding: 0;\n}\n\n.species figure {\n  display: flex;\n  justify-content: center;\n  margin: 0;\n  max-height: 200px;\n}\n\n.specie figure img {\n  border-radius: 5px;\n}\n\n@media only screen and (max-device-width: 767px) {\n  .specie figure img {\n    width: 150px;\n    height: 150px;\n  }\n}\n\nh1, h2, h3 {\n  color: var(--header-color);\n}\n\n.specie {\n  position: relative;\n  display: inline-flex;\n  margin: 10px;\n}\n\n.specie-title {\n  position: absolute;\n  background: rgba(0,0,0,.5);\n  color: var(--alt-link-color, white);\n  padding: 3px;\n  bottom: 0;\n  left: 0;\n  right: 0;\n  text-align: center;\n}";
 
-function Specie({ specie }) {
-  let url = `/article/${ specie.id }`;
-  let tn = thumbnail(specie);
-
-  return h(
-    'li',
-    { 'class': 'specie' },
-    h(
-      'a',
-      { href: url },
-      h(
-        'figure',
-        null,
-        tn ? h('img', { src: tn }) : ''
-      ),
-      h(
-        'span',
-        { 'class': 'specie-title' },
-        specie.title
-      )
-    )
-  );
-}
-
-var SpeciesList = function ({ filter, species, keyup }, children) {
+var SpeciesList = function ({ filter, species, keyup }) {
   let items = filter ? filterSpecies(species, filter) : species;
 
-  return h(
-    'div',
-    null,
-    h(
-      'style',
-      null,
-      styles
-    ),
-    h(
-      'h1',
-      null,
-      'Aliens'
-    ),
-    h(
-      'form',
-      { action: '/search' },
-      h('input', { onKeyup: keyup, type: 'text', value: filter ? filter : '',
-        name: 'q', placeholder: 'Search species', 'class': 'alien-search' })
-    ),
-    h(
-      'ul',
-      { 'class': 'species' },
-      items.map(specie => {
-        return h(Specie, { specie: specie });
-      })
-    )
-  );
+  return html`
+    <div>
+      <style>${ styles }</style>
+      <h1>Aliens</h1>
+
+      <form action="/search">
+        <input onKeyup=${ keyup } type="text" value=${ filter ? filter : '' }
+          name="q" placeholder="Search species" class="alien-search" />
+      </form>
+      <ul class="species">
+        ${ items.map(specie => {
+    return html`testing`;
+    //return Specie({specie});
+  }) }
+      </ul>
+    </div>
+  `;
 };
 
 function filterSpecies(species, query) {
@@ -549,114 +468,82 @@ class PageSelect extends Component {
 
   render({ page = 'index', articleId }) {
     if (page === 'index') {
-      return h('index-page', null);
+      return html`<index-page></index-page>`;
     }
 
-    return h('article-page', { article: articleId });
+    return html`<article-page article=${ articleId }></article-page>`;
   }
 }
 
 fritz.define('page-select', PageSelect);
 
 var Loading = function () {
-  return h(
-    "div",
-    { "class": "loading" },
-    h(
-      "svg",
-      { version: "1.1", id: "Layer_1", xmlns: "http://www.w3.org/2000/svg", x: "0px", y: "0px", width: "24px", height: "30px", viewBox: "0 0 24 30", style: "enable-background:new 0 0 50 50;" },
-      h(
-        "rect",
-        { x: "0", y: "0", width: "4", height: "10", fill: "#E5FCF5", transform: "translate(0 17.7778)" },
-        h("animateTransform", { attributeType: "xml", attributeName: "transform", type: "translate", values: "0 0; 0 20; 0 0", begin: "0", dur: "0.6s", repeatCount: "indefinite" })
-      ),
-      h(
-        "rect",
-        { x: "10", y: "0", width: "4", height: "10", fill: "#E5FCF5", transform: "translate(0 4.44444)" },
-        h("animateTransform", { attributeType: "xml", attributeName: "transform", type: "translate", values: "0 0; 0 20; 0 0", begin: "0.2s", dur: "0.6s", repeatCount: "indefinite" })
-      ),
-      h(
-        "rect",
-        { x: "20", y: "0", width: "4", height: "10", fill: "#E5FCF5", transform: "translate(0 8.88889)" },
-        h("animateTransform", { attributeType: "xml", attributeName: "transform", type: "translate", values: "0 0; 0 20; 0 0", begin: "0.4s", dur: "0.6s", repeatCount: "indefinite" })
-      )
-    )
-  );
+  return html`
+    <div class="loading">
+      <svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" x="0px" y="0px" width="24px" height="30px" viewBox="0 0 24 30" style="enable-background:new 0 0 50 50;" >
+        <rect x="0" y="0" width="4" height="10" fill="#E5FCF5" transform="translate(0 17.7778)">
+          <animateTransform attributeType="xml" attributeName="transform" type="translate" values="0 0; 0 20; 0 0" begin="0" dur="0.6s" repeatCount="indefinite"></animateTransform>
+        </rect>
+        <rect x="10" y="0" width="4" height="10" fill="#E5FCF5" transform="translate(0 4.44444)">
+          <animateTransform attributeType="xml" attributeName="transform" type="translate" values="0 0; 0 20; 0 0" begin="0.2s" dur="0.6s" repeatCount="indefinite"></animateTransform>
+        </rect>
+        <rect x="20" y="0" width="4" height="10" fill="#E5FCF5" transform="translate(0 8.88889)">
+          <animateTransform attributeType="xml" attributeName="transform" type="translate" values="0 0; 0 20; 0 0" begin="0.4s" dur="0.6s" repeatCount="indefinite"></animateTransform>
+        </rect>
+      </svg>
+    </div>
+  `;
 };
 
 function article$1({ data }) {
   let intro = data.article.sections[0];
   let item = first(data.detail.items);
 
-  return h(
-    'div',
-    { 'class': 'species-article' },
-    h(
-      'header',
-      null,
-      h(
-        'h1',
-        null,
-        intro.title
-      )
-    ),
-    h(
-      'article',
-      null,
-      h(
-        'figure',
-        null,
-        h('img', { src: thumbnail(item) })
-      ),
-      h(
-        'div',
-        null,
-        data.article.sections.map(articleSection)
-      )
-    )
-  );
+  return html`
+    <div class="species-article">
+      <header>
+        <h1>${ intro.title }</h1>
+      </header>
+      <article>
+        <figure>
+          <img src=${ thumbnail(item) } />
+        </figure>
+
+        <div>
+          ${ data.article.sections.map(articleSection) }
+        </div>
+      </article>
+    </div>
+  `;
 }
 
 function articleSection(section, idx) {
-  return h(
-    'section',
-    null,
-    idx === 0 ? '' : h(
-      'h2',
-      null,
-      section.title
-    ),
-    h(
-      'div',
-      null,
-      section.content.map(content => {
-        switch (content.type) {
-          case 'list':
-            return list$1(content);
-          default:
-            return h(
-              'p',
-              null,
-              content.text
-            );
-        }
-      })
-    )
-  );
+  return html`
+    <section>
+      ${ idx === 0 ? '' : html`<h2>${ section.title }</h2>` }
+
+      <div>
+        ${ section.content.map(content => {
+    switch (content.type) {
+      case 'list':
+        return list$1(content);
+      default:
+        return html`<p>${ content.text }</p>`;
+    }
+  }) }
+      </div>
+    </section>
+  `;
 }
 
 function list$1(content) {
-  return h(
-    'ul',
-    null,
-    content.elements.map(elem => {
-      return h(
-        'li',
-        null,
-        elem.text
-      );
-    })
-  );
+  return html`
+    <ul>
+      ${ content.elements.map(elem => {
+    return html`<li>${ elem.text }</li>`;
+  }) }
+    </ul>
+  `;
 }
 
 var styles$1 = ".loading {\n  display: flex;\n  justify-content: center;\n}\n\n.loading svg {\n  height: 150px;\n  width: 150px;\n}\n\n.species-article header h1 {\n  font-size: 2.5em;\n}\n\n.species-article figure {\n  float: right;\n}\n\n.species-article p {\n  line-height: 23px;\n}";
@@ -696,16 +583,12 @@ class ArticlePage extends Component {
       this.loadArticle();
     }
 
-    return h(
-      'section',
-      null,
-      h(
-        'style',
-        null,
-        styles$1
-      ),
-      data ? h(article$1, { data: data }) : h(Loading, null)
-    );
+    return html`
+      <section>
+        <style>${ styles$1 }</style>
+        ${ data ? article$1({ data }) : Loading() }
+      </section>
+    `;
   }
 }
 
@@ -738,8 +621,10 @@ class IndexPage extends Component {
   }
 
   render({}, { species, filter }) {
-    return h(SpeciesList, { species: species, keyup: this.keyup,
-      filter: filter });
+    return SpeciesList({
+      species, filter,
+      keyup: this.keyup
+    });
   }
 }
 
