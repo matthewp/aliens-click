@@ -1,9 +1,9 @@
 let precacheConfig = [
-  ["/assets/app.js",1],
-  ["/assets/main.js",1],
-  ["/assets/manifest.json",1],
-  ["/assets/service-worker-registration.js",1],
-  ["/assets/styles.css",1]
+  ["/assets/app.js", 1],
+  ["/assets/main.js", 1],
+  ["/assets/manifest.json", 1],
+  ["/assets/service-worker-registration.js", 1],
+  ["/assets/styles.css", 1]
 ];
 
 let cacheName = 'sw-v3--' + (self.registration ? self.registration.scope : '');
