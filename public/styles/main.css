@@ -1,0 +1,59 @@
+:root {
+  --alt-bg-color: #0B0014;
+  --fg-color: #d2d2d2;
+  --out-bg-color: #222;
+  --alt-link-color: #B3DEC1;
+  --header-color: #B3DEC1;
+}
+
+body {
+   font-family: "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif;
+   font-weight: 300;
+   margin: 0;
+   background-color: #000;
+   color: var(--fg-color, #E5FCF5);
+}
+
+body > header {
+  height: 3em;
+  box-sizing: border-box;
+  background-color: var(--out-bg-color, #750D37);
+  display: flex;
+}
+
+.home-button {
+  margin-left: 2em;
+  font-size: 120%;
+  align-self: center;
+  display: inline-flex;
+  align-items: center;
+}
+
+.home-button, .home-button:visited {
+  text-decoration: none;
+  color: inherit;
+}
+
+.home-icon {
+  height: 2rem;
+  fill: var(--fg-color);
+  margin-right: 0.5rem;
+}
+
+main, footer {
+  padding: 2em;
+}
+
+h1, h2, h3 {
+  color: var(--header-color);
+}
+
+footer {
+  background-color: var(--out-bg-color);
+  color: var(--fg-color);
+}
+
+footer a,
+footer a:visited {
+  color: var(--alt-link-color);
+}

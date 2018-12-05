@@ -1,6 +1,12 @@
 .PHONY: app watch serve prod main release copy all
 
+TTM=node_modules/.bin/text-to-module
+
 all: app main
+
+deploy-s3:
+	aws s3 sync public s3://static.aliens.click
+.PHONY: deploy-s3
 
 app:
 	./node_modules/.bin/rollup -c rollup.config.js -o ./public/app.js src/IndexPage.js
@@ -24,3 +30,6 @@ watch:
 
 dev:
 	make serve & make watch
+
+lib/species-list-styles.js: src/SpeciesList.css
+	cat $^ | $(TTM) > $@
