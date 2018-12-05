@@ -1,3 +1,5 @@
+const root = process.env.NODE_ENV === 'development' ?
+  '/assets' : 'https://static.aliens.click';
 
 exports.handle = async function(e) {
   let { id } = e.pathParameters || {};
@@ -30,15 +32,15 @@ function template(articleId) {
     <html lang="en">
     <title>Aliens app!</title>
     <meta charset="utf-8">
-    <link rel="manifest" href="/assets/manifest.json">
-    <link rel="icon" href="/assets/favicon.ico" type="image/x-icon">
-    <script src="/assets/app/main.js" type="module"></script>
-    <link rel="stylesheet" href="/assets/styles.css">
-    <link rel="stylesheet" href="/assets/styles/index.css">
-    <link rel="stylesheet" href="/assets/styles/article.css">
+    <link rel="manifest" href="${root}/manifest.json">
+    <link rel="icon" href="${root}/favicon.ico" type="image/x-icon">
+    <script src="${root}/app/main.js" type="module"></script>
+    <link rel="stylesheet" href="${root}/styles/main.css">
+    <link rel="stylesheet" href="${root}/styles/index.css">
+    <link rel="stylesheet" href="${root}/styles/article.css">
 
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <!--<script src="/service-worker-registration.js" async></script>-->
+    <script src="/service-worker-registration.js" async></script>
     <header>
       <a class="home-button" href="/">
         <svg viewBox="0 0 875.04822 874.50598"

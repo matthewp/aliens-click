@@ -1,9 +1,16 @@
 let precacheConfig = [
-  ["/assets/app.js", 1],
-  ["/assets/main.js", 1],
-  ["/assets/manifest.json", 1],
-  ["/assets/service-worker-registration.js", 1],
-  ["/assets/styles.css", 1]
+  ["/app/article-controller.js", 2],
+  ["/app/article-view.js", 2],
+  ["/app/index-controller.js", 2],
+  ["/app/index-view.js", 2],
+  ["/app/keyboard-nav", 2],
+  ["/app/list-item-view.js", 2],
+  ["/app/main.js", 2],
+  ["/app/section-view.js", 2],
+  ["/manifest.json", 2],
+  ["/styles/main.css", 2],
+  ["/styles/article.css", 2],
+  ["/styles/index.css", 2]
 ];
 
 let cacheName = 'sw-v3--' + (self.registration ? self.registration.scope : '');
@@ -181,37 +188,5 @@ self.addEventListener('fetch', function(event) {
 
       event.respondWith(respondFromCache());
     }
-  }
-});
-
-self.addEventListener('fetch', function(event) {
-  if(/\/api\//.test(event.request.url)) {
-    async function update(cache) {
-      let response = await fetch(event.request.clone());
-      cache.put(event.request, response.clone());
-      let data = await response.json();
-      let matched = await clients.matchAll();
-      matched[0].postMessage({
-        type: 'data-update',
-        path: new URL(event.request.url).pathname,
-        data
-      });
-    }
-
-    async function loadFromCache() {
-      let cache = await caches.open(cacheName);
-      let k = await cache.keys();
-      let response = await cache.match(event.request);
-      if(response) {
-        Promise.resolve().then(() => update(cache));
-        return response;
-      } else {
-        response = await fetch(event.request);
-        cache.put(event.request, response.clone());
-        return response;
-      }
-    }
-
-    event.respondWith(loadFromCache());
   }
 });

@@ -1,7 +1,7 @@
 if ('serviceWorker' in navigator) {
-  async function registerServerWorker() {
+  async function registerServiceWorker(serviceWorkerUrl) {
     try {
-      let reg = await navigator.serviceWorker.register('/service-worker.js');
+      let reg = await navigator.serviceWorker.register(serviceWorkerUrl);
 
       reg.onupdatefound = function() {
         let installingWorker = reg.installing;
@@ -33,5 +33,6 @@ if ('serviceWorker' in navigator) {
     }
   }
 
-  registerServerWorker();
+  registerServiceWorker('/route-sw.js');
+  registerServiceWorker('https://static.aliens.click/static-sw.js');
 }
