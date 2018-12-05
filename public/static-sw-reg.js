@@ -33,6 +33,5 @@ if ('serviceWorker' in navigator) {
     }
   }
 
-  registerServiceWorker('/route-sw.js');
   registerServiceWorker('https://static.aliens.click/static-sw.js');
 }

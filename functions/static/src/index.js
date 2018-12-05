@@ -1,5 +1,5 @@
-const root = process.env.NODE_ENV === 'development' ?
-  '/assets' : 'https://static.aliens.click';
+const isDev = process.env.NODE_ENV === 'development';
+const root = isDev ? '/assets' : 'https://static.aliens.click';
 
 exports.handle = async function(e) {
   let { id } = e.pathParameters || {};
@@ -40,7 +40,11 @@ function template(articleId) {
     <link rel="stylesheet" href="${root}/styles/article.css">
 
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <script src="/service-worker-registration.js" async></script>
+    ${isDev ? '' : `
+      <script src="/route-sw-reg.js" async></script>
+      <script src="${root}/static-sw-reg.js" async></script>
+    `}
+    
     <header>
       <a class="home-button" href="/">
         <svg viewBox="0 0 875.04822 874.50598"

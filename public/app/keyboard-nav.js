@@ -13,7 +13,7 @@ function init() {
 
   /* State variables */
   let rowMeasurementQueued;
-  let itemsPerRow, activeIndex, numberOfItems, listMap;
+  let itemsPerRow, activeIndex, numberOfItems;
 
   /* DOM update functions */
   function setActiveNode(activeIndex) {
@@ -77,12 +77,6 @@ function init() {
 
   function setNumberOfItems(value) {
     numberOfItems = value;
-  }
-
-  function setListMap(value) {
-    if(listMap !== value) {
-      listMap = value;
-    }
   }
 
   function setActive(value) {
@@ -152,7 +146,6 @@ function init() {
       setActive(null);
     }
     if(data.count) setNumberOfItems(data.count);
-    if(data.listMap) setListMap(data.listMap);
     queueRowSizeMeasurement();
   }
 

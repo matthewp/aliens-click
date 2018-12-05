@@ -63,7 +63,10 @@ function init() {
         filteredList.push(itemUpdate.node);
       }
     }
-    updateKeyboardNav({ list: filteredList });
+    updateKeyboardNav({
+      list: filteredList,
+      count: filteredList.length
+    });
   }
 
   function setInputActive() {
