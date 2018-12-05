@@ -1,3 +1,4 @@
+let cacheName = 'sw-v3--' + (self.registration ? self.registration.scope : '');
 
 self.addEventListener('fetch', function(event) {
   if(/\/api\//.test(event.request.url)) {
