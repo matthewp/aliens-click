@@ -1,6 +1,0 @@
-runtime: nodejs
-env: flex
-handlers:
-  - url: /.*
-    script: IGNORE
-    secure: always
