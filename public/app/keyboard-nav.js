@@ -1,5 +1,6 @@
 function getItemsPerRow(list) {
   const grid = Array.from(list.children || list);
+  if(grid.length === 0) return 0;
   const baseOffset = grid[0].offsetTop;
   const breakIndex = grid.findIndex(item => item.offsetTop > baseOffset);
   const numPerRow = (breakIndex === -1 ? grid.length : breakIndex);

@@ -90,7 +90,7 @@ function init() {
 
   /* Event listeners */
   function onInputKeyUp(ev) {
-    setFilter(ev.target.value);
+    setFilter(ev.target.value.toLowerCase());
   }
 
   function onMakeInputActive() {
